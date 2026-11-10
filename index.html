@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Юнармия — МБОУ СОШ №2 им. Л. П. Шведченко</title>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{--bg:#080b0f;--text:#f5f7f9;--muted:#aab5c0;--line:#26313c;--soft:#10161d}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:58px 58px}
+nav{position:fixed;z-index:20;top:0;left:0;right:0;border-bottom:1px solid #202933;background:rgba(8,11,15,.78);backdrop-filter:blur(14px)}
+.nav{max-width:1150px;margin:auto;padding:15px 22px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:13px;font-weight:800;letter-spacing:.14em}
+.links{display:flex;gap:20px}.links a{color:#b9c3cd;text-decoration:none;font-size:12px}.links a:hover{color:#fff}
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:110px 24px 70px}
+.hero-inner{width:min(1100px,100%);display:grid;grid-template-columns:1.25fr .75fr;gap:70px;align-items:center}
+.eyebrow{font-size:12px;letter-spacing:.27em;color:#9eafbf;margin-bottom:22px}
+.title{margin:0;font-weight:900;letter-spacing:-.055em;font-size:clamp(62px,9vw,126px);line-height:.9}
+.title .line{display:block}
+.title .second{margin-left:72px}
+.accent{height:2px;width:115px;background:#dbe3ea;margin:28px 0}
+.subtitle{max-width:670px;color:#b8c3ce;font-size:17px;line-height:1.65}
+.btns{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+.btn{padding:13px 20px;border:1px solid #3b4652;border-radius:9px;color:#fff;text-decoration:none;font-weight:700;font-size:12px}
+.btn.primary{background:#f2f4f6;color:#0a0d11;border-color:#f2f4f6}
+.visual{position:relative;min-height:430px;display:flex;align-items:center;justify-content:center}
+.ring{width:330px;height:330px;border:1px solid #46535f;border-radius:50%;position:relative}
+.ring:before,.ring:after{content:"";position:absolute;inset:38px;border:1px solid #303b46;border-radius:50%}
+.ring:after{inset:105px;border-color:#647381}
+.star{position:absolute;inset:0;display:grid;place-items:center;font-size:58px}
+.vtext{position:absolute;bottom:12px;right:0;color:#6f7f8d;font-size:10px;letter-spacing:.22em}
+section{max-width:1150px;margin:auto;padding:90px 22px}
+.kicker{color:#91a4b5;font-size:11px;letter-spacing:.22em}
+h2{font-size:43px;line-height:1.05;margin:8px 0 14px}
+.lead{color:var(--muted);max-width:720px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
+.card{background:rgba(15,21,28,.82);border:1px solid var(--line);border-radius:16px;padding:24px}.card p{color:var(--muted)}
+.timeline{border-left:1px solid #46515c;margin:30px 0 0 5px;padding-left:24px}.event{margin-bottom:28px}.event b{font-size:11px;color:#91a4b5}.event h3{margin:5px 0}.event p{color:var(--muted);margin:0}
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px}.ph{aspect-ratio:4/3;border:1px dashed #3c4854;border-radius:14px;display:grid;place-items:center;color:#71808e;background:#0c1117}
+.player{margin-top:28px;padding:20px;background:var(--soft);border:1px solid var(--line);border-radius:16px}audio{width:100%}
+form{max-width:760px;display:grid;gap:14px;margin-top:28px}input,textarea,select{width:100%;padding:13px;background:#0a0e13;color:#fff;border:1px solid #34404c;border-radius:9px;font:inherit}textarea{min-height:110px}
+footer{border-top:1px solid var(--line);padding:35px 22px;text-align:center;color:#7f8c98}
+
+.staff{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:34px}
+.person{display:grid;grid-template-columns:180px 1fr;min-height:230px;overflow:hidden;background:rgba(15,21,28,.9);border:1px solid var(--line);border-radius:16px}
+.person-photo{background:#e9edf0;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+.person-photo img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.person-info{padding:24px;display:flex;flex-direction:column;justify-content:center}
+.person-role{font-size:10px;letter-spacing:.18em;color:#91a4b5;margin-bottom:10px}
+.person-info h3{font-size:21px;line-height:1.2;margin:0 0 9px}
+.person-info p{margin:0;color:var(--muted);font-size:14px}
+
+
+.clickable{cursor:pointer;transition:transform .2s ease,border-color .2s ease,background .2s ease}
+.clickable:hover{transform:translateY(-3px);border-color:#657483;background:rgba(20,27,35,.96)}
+.clickable:focus-visible{outline:2px solid #dbe3ea;outline-offset:3px}
+.clickable .person-photo{position:relative}
+.clickable .person-photo:after{content:"Подробнее";position:absolute;left:10px;bottom:10px;padding:6px 9px;border-radius:7px;background:rgba(7,10,14,.78);border:1px solid rgba(255,255,255,.18);font-size:10px;color:#fff;letter-spacing:.08em}
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px)}
+.modal-box{position:relative;width:min(820px,100%);max-height:90vh;overflow:auto;background:#0c1117;border:1px solid #3b4753;border-radius:20px;box-shadow:0 30px 100px rgba(0,0,0,.55);padding:30px}
+.modal-close{position:absolute;right:16px;top:13px;width:38px;height:38px;border-radius:50%;border:1px solid #394550;background:#10161d;color:#fff;font-size:27px;line-height:1;cursor:pointer}
+.modal-head{display:flex;gap:24px;align-items:center;padding-right:45px;margin-bottom:25px}
+.modal-head img{width:145px;height:175px;object-fit:cover;object-position:center top;border-radius:12px;border:1px solid #3a4652;background:#eef0f2}
+.modal-head h3{font-size:28px;line-height:1.15;margin:7px 0 0}
+.info-list{display:grid;gap:10px}
+.info-row{display:grid;grid-template-columns:270px 1fr;gap:20px;padding:12px 0;border-top:1px solid #222d37}
+.info-label{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:#8fa2b3}
+.info-value{color:#e2e7eb;font-size:14px;line-height:1.5}
+@media(max-width:800px){
+ .modal-box{padding:22px}.modal-head{align-items:flex-start;gap:15px}.modal-head img{width:95px;height:120px}.modal-head h3{font-size:20px}
+ .info-row{grid-template-columns:1fr;gap:4px}
+}
+
+@media(max-width:800px){
+ .links{display:none}.hero-inner{grid-template-columns:1fr;gap:30px}.visual{display:none}
+ .title{font-size:clamp(58px,16vw,100px)}
+ .person{grid-template-columns:120px 1fr;min-height:180px}
+ .person-info{padding:18px}.person-info h3{font-size:17px}.title .second{margin-left:35px}
+ .grid,.gallery,.staff{grid-template-columns:1fr}
+}
+
+.music-section{padding-bottom:150px}
+.music-widget{position:fixed;right:24px;bottom:24px;z-index:80;font-family:Arial,Helvetica,sans-serif}
+.music-fab{width:58px;height:58px;border-radius:50%;border:1px solid #596673;background:#f2f4f6;color:#0a0d11;font-size:27px;cursor:pointer;box-shadow:0 15px 40px rgba(0,0,0,.4);transition:transform .2s}
+.music-fab:hover{transform:scale(1.05)}
+.music-panel{display:none;width:330px;margin-bottom:10px;padding:18px;border:1px solid #3a4652;border-radius:18px;background:rgba(12,17,23,.94);backdrop-filter:blur(18px);box-shadow:0 25px 70px rgba(0,0,0,.55)}
+.music-widget.open .music-panel{display:block}
+.music-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}
+.music-label{font-size:9px;letter-spacing:.18em;color:#8fa2b3;margin-bottom:6px}
+.music-title{font-weight:700;font-size:14px;line-height:1.3}
+.music-min{border:1px solid #3b4652;background:#10161d;color:#fff;border-radius:50%;width:30px;height:30px;font-size:18px;cursor:pointer}
+.music-controls{display:flex;justify-content:center;align-items:center;gap:12px;margin:18px 0 13px}
+.circle-btn,.play-btn{border:1px solid #3b4652;background:#10161d;color:#fff;cursor:pointer}
+.circle-btn{width:34px;height:34px;border-radius:50%;font-size:22px}
+.play-btn{width:44px;height:44px;border-radius:50%;font-size:15px}
+.music-progress,.volume-row input{accent-color:#dce3e9}
+.music-progress{width:100%;margin:0}
+.music-bottom{display:flex;justify-content:space-between;font-size:10px;color:#84919d;margin-top:3px}
+.volume-row{display:flex;align-items:center;gap:9px;margin-top:12px;color:#aeb8c4;font-size:13px}
+.volume-row input{width:100%}
+@media(max-width:600px){.music-widget{right:14px;bottom:14px}.music-panel{width:min(330px,calc(100vw - 28px))}}
+
+
+
+.sapsan-name{
+  display:inline-flex;align-items:center;gap:12px;
+  margin:18px 0 12px;padding:12px 18px;
+  border:1px solid rgba(190,20,35,.65);
+  border-left:5px solid #b51b2b;
+  background:linear-gradient(90deg,rgba(181,27,43,.18),rgba(181,27,43,.04));
+  box-shadow:0 8px 28px rgba(0,0,0,.22);
+  font-weight:900;letter-spacing:2.2px;font-size:clamp(16px,1.8vw,23px);
+  text-transform:uppercase;
+}
+.sapsan-name .eagle-dot{width:9px;height:9px;border-radius:50%;background:#d22a3b;box-shadow:0 0 14px rgba(210,42,59,.8);flex:0 0 auto}
+@media(max-width:800px){.sapsan-name{margin:14px 0 10px;padding:10px 13px;font-size:14px;letter-spacing:1.4px}}
+
+/* FINAL HERO DESIGN */
+body{background:#070a0e;color:#f4f6f8}
+nav{height:86px;background:rgba(5,8,12,.9);border-bottom:1px solid #1c252e}
+.nav{height:86px;max-width:1320px;padding:0 28px;gap:28px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;min-width:300px}
+.brand-mark{width:43px;height:43px;border:2px solid #a71924;border-radius:50%;display:grid;place-items:center;color:#e41f2e;font-size:22px;box-shadow:0 0 25px rgba(210,20,35,.18)}
+.brand-text{font-size:12px;line-height:1.35;font-weight:800;letter-spacing:.02em}.brand-text span{font-weight:500;color:#8895a1}
+.links{display:flex;align-items:center;gap:28px;flex:1;justify-content:center}.links a{font-size:12px;color:#c3cbd3;position:relative;padding:32px 0}.links a.active{color:#fff}.links a.active:after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:#e21c2b;box-shadow:0 0 10px rgba(226,28,43,.55)}
+.join{white-space:nowrap;background:linear-gradient(135deg,#c51625,#8e0f19);border:1px solid #e72a37;box-shadow:0 0 28px rgba(220,20,35,.22);border-radius:9px;padding:16px 22px;color:#fff;text-decoration:none;font-size:11px;font-weight:800}.join span{font-size:18px;margin-left:12px}
+.hero{min-height:calc(100vh - 86px);padding:70px 7vw 65px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;inset:auto 0 0;height:240px;background:radial-gradient(ellipse at 70% 100%,rgba(160,10,20,.12),transparent 65%);pointer-events:none}
+.hero-inner{max-width:1320px;width:100%;margin:auto;display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:center}
+.hero-copy{position:relative;z-index:2}
+.eyebrow{font-size:12px;letter-spacing:.28em;color:#9aabbc;margin-bottom:30px}
+.title{font-size:clamp(78px,9.1vw,144px);line-height:.88;letter-spacing:-.065em;margin:0;font-weight:900}
+.title span{display:block}.title span+span{margin-left:80px}
+.accent{height:2px;width:148px;background:#e8edf2;margin:36px 0 30px;box-shadow:0 0 8px rgba(255,255,255,.08)}
+.subtitle{font-size:16px;line-height:1.65;color:#b5c0cb;max-width:730px}
+.btns{margin-top:30px}.btn{border-radius:8px;padding:15px 25px;font-size:11px;letter-spacing:.02em}.btn.primary{box-shadow:0 10px 28px rgba(255,255,255,.07)}
+.hero-visual{height:600px;position:relative;display:flex;align-items:center;justify-content:center;background:url("images/hero-griffin.png") center center/contain no-repeat}
+.hero-visual > .radar,.hero-visual > .griffin-core,.hero-visual > .crimea-outline,.hero-visual > .crimea-word,.hero-visual > .unity,.hero-visual > .motto{display:none}
+.scroll-down{position:absolute;right:4.5%;bottom:28px;width:46px;height:46px;border:1px solid #687681;border-radius:50%;display:grid;place-items:center;font-size:22px;color:#dce2e7}
+section{max-width:1320px;padding:105px 28px}.kicker{letter-spacing:.25em}
+.achievement{position:relative;overflow:hidden}.achievement-num{font-size:12px;color:#a2b0bc;letter-spacing:.18em;margin-bottom:25px}
+#contacts{padding-bottom:65px}
+.music-widget{right:24px;bottom:24px}
+@media(max-width:1050px){.links{gap:14px}.brand{min-width:230px}.join{padding:13px 15px}.hero-inner{grid-template-columns:1fr}.hero-visual{height:420px}.hero-copy{padding-top:15px}.title{font-size:clamp(65px,11vw,115px)}}
+@media(max-width:800px){nav,.nav{height:70px}.brand{min-width:auto}.brand-text{font-size:10px}.brand-mark{width:35px;height:35px}.join{display:none}.hero{min-height:calc(100vh - 70px);padding:65px 22px}.hero-visual{height:390px;background-size:contain}.radar.r1{width:330px;height:330px}.radar.r2{width:255px;height:255px}.radar.r3{width:170px;height:170px}.griffin-core{width:145px;height:145px}.griffin{font-size:72px}.crimea-outline{width:380px;height:230px}.title span+span{margin-left:35px}.subtitle{font-size:15px}.crimea-word{top:70%}.unity{top:78%;font-size:8px}.motto{bottom:6%}.scroll-down{display:none}}
+
+
+/* Navigation scroll spy */
+.links a{transition:color .2s ease}
+.links a.active:after{transition:opacity .2s ease}
+.section-current{position:fixed;left:24px;bottom:25px;z-index:70;display:flex;align-items:center;gap:10px;padding:9px 13px;border:1px solid #293540;border-radius:9px;background:rgba(8,12,17,.82);backdrop-filter:blur(12px);color:#9daab6;font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:0;transform:translateY(8px);transition:.25s}
+.section-current.show{opacity:1;transform:translateY(0)}
+.section-current i{display:block;width:6px;height:6px;border-radius:50%;background:#d21c2a;box-shadow:0 0 10px rgba(210,28,42,.7)}
+@media(max-width:800px){.section-current{left:14px;bottom:14px}}
+
+
+/* UPLOADED CRIMEA EMBLEM */
+.hero-visual.uploaded-emblem{
+  height:650px;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:visible;
+  background:transparent!important;
+}
+.hero-visual.uploaded-emblem img{
+  display:block;
+  width:min(690px,100%);
+  height:auto;
+  max-height:650px;
+  object-fit:contain;
+  object-position:center;
+  filter:drop-shadow(0 12px 25px rgba(0,0,0,.28));
+}
+@media(max-width:1150px){
+  .hero-visual.uploaded-emblem{height:500px}
+  .hero-visual.uploaded-emblem img{width:min(570px,100%);max-height:500px}
+}
+@media(max-width:800px){
+  .hero-visual.uploaded-emblem{height:390px}
+  .hero-visual.uploaded-emblem img{width:min(430px,100%);max-height:390px}
+}
+
+
+/* EMBLEM SIZE — MATCH USER REFERENCE */
+.hero-visual.uploaded-emblem{
+  height:600px!important;
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:visible!important;
+}
+.hero-visual.uploaded-emblem img{
+  display:block!important;
+  width:500px!important;
+  max-width:100%!important;
+  height:auto!important;
+  max-height:540px!important;
+  transform:none!important;
+  object-fit:contain!important;
+}
+@media(max-width:1150px){
+  .hero-visual.uploaded-emblem{height:500px!important}
+  .hero-visual.uploaded-emblem img{
+    width:430px!important;
+    max-height:470px!important;
+  }
+}
+@media(max-width:800px){
+  .hero-visual.uploaded-emblem{height:380px!important}
+  .hero-visual.uploaded-emblem img{
+    width:min(340px,82vw)!important;
+    max-height:350px!important;
+  }
+}
+
+
+/* NEWS */
+.news-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:30px}
+.news-card{padding:0;overflow:hidden;display:flex;flex-direction:column;min-height:100%}
+.news-image{width:100%;aspect-ratio:16/9;object-fit:cover;background:#111820}
+.news-content{padding:22px;display:flex;flex-direction:column;flex:1}
+.news-meta{font-size:10px;letter-spacing:.12em;color:#91a4b5;text-transform:uppercase;margin-bottom:10px}
+.news-content h3{margin:0 0 10px;font-size:20px;line-height:1.25}
+.news-content p{color:var(--muted);line-height:1.6;margin:0;white-space:pre-wrap}
+.news-empty{grid-column:1/-1}
+@media(max-width:800px){.news-grid{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav">
+    <a class="brand" href="#">
+      <div class="brand-mark">★</div>
+      <div class="brand-text">МБОУ СОШ №2<br>им. Л. П. ШВЕДЧЕНКО<br><span>г. Щёлкино</span></div>
+    </a>
+    <div class="links">
+      <a class="active" href="#home">Главная</a>
+      <a href="#about">Об отряде</a>
+      <a href="#news">Новости</a>
+      <a href="#team">Наша команда</a>
+      <a href="#directions">Мероприятия</a>
+      <a href="#achievements">Достижения</a>
+      <a href="#gallery">Галерея</a>
+      <a href="#contacts">Контакты</a>
+      <a href="#survey">Анкета</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="home">
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <div class="eyebrow">МБОУ СОШ №2 ИМ. Л. П. ШВЕДЧЕНКО</div>
+      <div class="sapsan-name"><span class="eagle-dot"></span>ЮНАРМЕЙСКИЙ ОТРЯД «САПСАН»</div>
+      <h1 class="title"><span>СТРОИМ</span><span>БУДУЩЕЕ.</span></h1>
+      <div class="accent"></div>
+      <p class="subtitle">Современный сайт юнармейского отряда города Щёлкино. Команда, мероприятия, достижения и история — в одном месте.</p>
+      <div class="btns">
+        <a class="btn primary" href="#about">ОБ ОТРЯДЕ</a>
+        <a class="btn" href="#history">НАШ ПУТЬ</a>
+      </div>
+    </div>
+    <div class="hero-visual uploaded-emblem" aria-label="Герб Крыма">
+      <img src="images/crimea-emblem-uploaded.png" alt="Герб Крыма">
+    </div>
+  <div class="scroll-down">↓</div>
+</header>
+
+<section id="about"><div class="kicker">01 · ОТРЯД</div><h2>Мы — команда.</h2><p class="lead">Юнармейский отряд объединяет школьников, которым интересны дисциплина, спорт, творчество, история, служение обществу и работа в команде.</p>
+<div id="team" class="staff">
+  <article class="person clickable" data-person="director" tabindex="0" role="button" aria-label="Подробнее о Платоненко Екатерине Андреевне">
+    <div class="person-photo"><img src="images/director.png" alt="Платоненко Екатерина Андреевна"></div>
+    <div class="person-info">
+      <div class="person-role">ДИРЕКТОР ШКОЛЫ</div>
+      <h3>Платоненко Екатерина Андреевна</h3>
+      <p>Нажмите на фотографию, чтобы открыть информацию</p>
+    </div>
+  </article>
+  <article class="person clickable" data-person="leader" tabindex="0" role="button" aria-label="Подробнее о Холявкине Юрии Анатольевиче">
+    <div class="person-photo"><img src="images/leader.jpg" alt="Холявкин Юрий Анатольевич"></div>
+    <div class="person-info">
+      <div class="person-role">РУКОВОДИТЕЛЬ ЮНАРМИИ</div>
+      <h3>Холявкин Юрий Анатольевич</h3>
+      <p>Нажмите на фотографию, чтобы открыть информацию</p>
+    </div>
+  </article>
+</div>
+
+<div class="modal" id="personModal" aria-hidden="true">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-box" role="dialog" aria-modal="true">
+    <button class="modal-close" type="button" data-close aria-label="Закрыть">×</button>
+    <div class="modal-head">
+      <img id="modalPhoto" src="" alt="">
+      <div>
+        <div class="person-role" id="modalRole"></div>
+        <h3 id="modalName"></h3>
+      </div>
+    </div>
+    <div class="info-list" id="modalInfo"></div>
+  </div>
+</div>
+
+<div class="grid"><article class="card"><h3>Команда</h3><p>Учимся действовать вместе и отвечать за общий результат.</p></article><article class="card"><h3>Движение</h3><p>Участвуем в школьных, городских и военно-патриотических мероприятиях.</p></article><article class="card"><h3>Развитие</h3><p>Осваиваем новые навыки — от строевой подготовки до медиа.</p></article></div></section>
+
+<section id="news">
+  <div class="kicker">02 · НОВОСТИ</div>
+  <h2>Жизнь отряда.</h2>
+  <p class="lead">Новости, события и важные моменты юнармейского отряда «Сапсан».</p>
+  <div class="news-grid" id="newsGrid">
+    <article class="card news-empty"><div class="achievement-num">САПСАН · НОВОСТИ</div><h3>Скоро здесь появятся новости</h3><p>Публикации можно будет добавлять через закрытую панель администратора.</p></article>
+  </div>
+</section>
+
+<section id="directions"><div class="kicker">02 · НАПРАВЛЕНИЯ</div><h2>Что мы делаем.</h2><div class="grid">
+<article class="card"><h3>Строевая подготовка</h3><p>Дисциплина, точность и слаженность.</p></article>
+<article class="card"><h3>Спорт</h3><p>Соревнования, эстафеты и военно-спортивные игры.</p></article>
+<article class="card"><h3>Память</h3><p>Исторические мероприятия и сохранение памяти.</p></article>
+<article class="card"><h3>Медиа</h3><p>Фото, видео, монтаж и освещение жизни отряда.</p></article>
+<article class="card"><h3>Туризм</h3><p>Походы, ориентирование и командные испытания.</p></article>
+<article class="card"><h3>Мероприятия</h3><p>Участие в торжественных церемониях и акциях.</p></article>
+</div></section>
+
+<section id="history"><div class="kicker">03 · ИСТОРИЯ</div><h2>Наш путь.</h2><p class="lead">Здесь можно постепенно собрать летопись отряда.</p>
+<div class="timeline"><div class="event"><b>01</b><h3>Первые шаги</h3><p>Начало работы отряда и первые совместные мероприятия.</p></div><div class="event"><b>02</b><h3>Соревнования и акции</h3><p>Активное участие в школьной и городской жизни.</p></div><div class="event"><b>03</b><h3>Сегодня</h3><p>Развиваем направления, создаём медиа и собираем историю команды.</p></div></div></section>
+
+<section id="achievements">
+  <div class="kicker">04 · ДОСТИЖЕНИЯ</div>
+  <h2>Результат команды.</h2>
+  <p class="lead">Здесь будут собраны грамоты, дипломы, кубки и другие достижения нашего отряда.</p>
+  <div class="grid">
+    <article class="card achievement"><div class="achievement-num">01</div><h3>Соревнования</h3><p>Участие в военно-спортивных и командных соревнованиях.</p></article>
+    <article class="card achievement"><div class="achievement-num">02</div><h3>Память и история</h3><p>Участие в памятных, патриотических и исторических мероприятиях.</p></article>
+    <article class="card achievement"><div class="achievement-num">03</div><h3>Командная работа</h3><p>Развиваем дисциплину, взаимопомощь и ответственность.</p></article>
+  </div>
+</section>
+
+<section id="gallery"><div class="kicker">04 · ГАЛЕРЕЯ</div><h2>Моменты команды.</h2><div class="gallery">
+<div class="ph">ФОТО 01</div><div class="ph">ФОТО 02</div><div class="ph">ФОТО 03</div><div class="ph">ФОТО 04</div><div class="ph">ФОТО 05</div><div class="ph">ФОТО 06</div>
+</div></section>
+
+
+<section id="music" class="music-section">
+  <div class="kicker">07 · МУЗЫКА</div>
+  <h2>Музыка отряда.</h2>
+  <p class="lead">Плеер закреплён в углу экрана — музыка остаётся доступной во время просмотра сайта.</p>
+</section>
+
+<div class="section-current" id="sectionCurrent"><i></i><span>Главная</span></div>
+<div class="music-widget" id="musicWidget">
+  <button class="music-fab" id="musicFab" aria-label="Открыть плеер">♪</button>
+  <div class="music-panel">
+    <div class="music-top">
+      <div>
+        <div class="music-label">СЕЙЧАС ИГРАЕТ</div>
+        <div class="music-title" id="musicTitle">Юность в сапогах</div>
+      </div>
+      <button class="music-min" id="musicMin" aria-label="Свернуть">−</button>
+    </div>
+    <div class="music-controls">
+      <button class="circle-btn" id="prevBtn" aria-label="Предыдущий">‹</button>
+      <button class="play-btn" id="playBtn" aria-label="Пауза">▶</button>
+      <button class="circle-btn" id="nextBtn" aria-label="Следующий">›</button>
+    </div>
+    <input class="music-progress" id="musicProgress" type="range" min="0" max="100" value="0" aria-label="Прогресс">
+    <div class="music-bottom"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
+    <div class="volume-row"><span>🔊</span><input id="volume" type="range" min="0" max="1" step=".01" value=".75"></div>
+    <audio id="siteAudio" preload="metadata"></audio>
+  </div>
+</div>
+
+
+<section id="contacts">
+  <div class="kicker">06 · КОНТАКТЫ</div>
+  <h2>Мы на связи.</h2>
+  <div class="grid">
+    <article class="card"><h3>Школа</h3><p>МБОУ СОШ №2 им. Л. П. Шведченко<br>г. Щёлкино</p></article>
+    <article class="card"><h3>Руководитель Юнармии</h3><p>Холявкин Юрий Анатольевич<br>Тел.: (36557) 5-55-22</p></article>
+    <article class="card"><h3>Директор</h3><p>Платоненко Екатерина Андреевна<br>lenino_shkola2schelkino@crimeaedu.ru</p></article>
+  </div>
+</section>
+
+<section id="survey"><div class="kicker">08 · ОБРАТНАЯ СВЯЗЬ</div><h2>Анонимная анкета.</h2><p class="lead">Поделись мнением об отряде. Личные данные не запрашиваются.</p>
+<form id="surveyForm">
+<label>Что тебе нравится?<select name="likes"><option>Мероприятия</option><option>Соревнования</option><option>Команда и общение</option><option>Строевая подготовка</option><option>Патриотические акции</option></select></label>
+<label>Что добавить?<textarea name="add"></textarea></label><label>Что изменить или улучшить?<textarea name="change"></textarea></label>
+<label>Что хотелось бы попробовать?<select name="try"><option>Туристический поход</option><option>Военно-спортивная игра</option><option>Медиа-клуб / монтаж</option><option>Фото и видео</option><option>Экскурсии</option></select></label>
+<label>Оценка<select name="rating"><option>5 — отлично</option><option>4 — хорошо</option><option>3 — нормально</option><option>2 — можно лучше</option><option>1 — плохо</option></select></label>
+<label>Пожелание<textarea name="wish"></textarea></label><button class="btn primary" type="submit">ОТПРАВИТЬ АНКЕТУ</button><p id="status"></p>
+</form></section>
+<footer>© Юнармейский отряд · МБОУ СОШ №2 им. Л. П. Шведченко · г. Щёлкино<br><a href="/admin.html" style="display:inline-block;margin-top:12px;color:#8996a2;text-decoration:none;font-size:11px">Вход для администратора</a></footer>
+<script>
+const ENDPOINT="https://script.google.com/macros/s/AKfycbxqtPvdEBW4K91DpJJUDxgnaNXpsKnft4x83kwrXv7Vcr5zXiwBRN8l-zzbmewZenMC/exec";
+document.getElementById("surveyForm").addEventListener("submit",async e=>{
+e.preventDefault();const s=document.getElementById("status"),d=Object.fromEntries(new FormData(e.target).entries());s.textContent="Отправляем…";
+try{await fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:new URLSearchParams(d)});e.target.reset();s.textContent="Спасибо! Анкета отправлена."}catch(x){s.textContent="Не удалось отправить. Попробуй ещё раз."}});
+</script>
+
+<script>
+const people={
+ director:{
+  role:"Директор школы",
+  name:"Платоненко Екатерина Андреевна",
+  photo:"images/director.png",
+  rows:[
+   ["Должность","директор"],
+   ["Преподаваемые учебные предметы, курсы","иностранный язык (английский)"],
+   ["Электронная почта","lenino_shkola2schelkino@crimeaedu.ru"],
+   ["Контактный телефон","(36557) 5-55-22"],
+   ["Общий стаж","10 лет"],
+   ["Общий педагогический стаж","10 лет"],
+   ["Образовательное учреждение",'Горловский институт иностранных языков Государственного высшего учебного заведения «Донбасский государственный педагогический университет»'],
+   ["Уровень образования","Высшее"],
+   ["Направление подготовки и (или) специальности","Язык и литература (английский) (Учитель английского и немецкого языков и зарубежной литературы)"],
+   ["Квалификационная категория","—"],
+   ["Дата получения квалификации","—"]
+  ]
+ },
+ leader:{
+  role:"Учитель ОБЗР · Руководитель Юнармии",
+  name:"Холявкин Юрий Анатольевич",
+  photo:"images/leader.jpg",
+  rows:[
+   ["Должность","учитель ОБЗР, руководитель юнармии"],
+   ["Преподаваемые учебные предметы, курсы","основы безопасности и защиты Родины"],
+   ["Электронная почта","—"],
+   ["Контактный телефон","(36557) 5-55-22"],
+   ["Общий стаж","41 год"],
+   ["Общий педагогический стаж","13 лет"],
+   ["Образовательное учреждение","Донецкое высшее-политическое училище инженерных войск связи; Донецкий национальный университет"],
+   ["Уровень образования","Высшее"],
+   ["Направление подготовки и (или) специальности","Офицер с высшим военно-политическим образованием; Правоведение"],
+   ["Квалификационная категория","—"],
+   ["Дата получения квалификации","—"],
+   ["Данные о повышении квалификации или профессиональной переподготовке","Информация не указана"]
+  ]
+ }
+};
+const modal=document.getElementById("personModal");
+const info=document.getElementById("modalInfo");
+function openPerson(key){
+ const x=people[key]; if(!x)return;
+ document.getElementById("modalPhoto").src=x.photo;
+ document.getElementById("modalPhoto").alt=x.name;
+ document.getElementById("modalRole").textContent=x.role;
+ document.getElementById("modalName").textContent=x.name;
+ info.innerHTML=x.rows.map(r=>`<div class="info-row"><div class="info-label">${r[0]}</div><div class="info-value">${r[1]}</div></div>`).join("");
+ modal.classList.add("open"); modal.setAttribute("aria-hidden","false"); document.body.style.overflow="hidden";
+}
+function closePerson(){modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.style.overflow=""}
+document.querySelectorAll(".clickable").forEach(el=>{
+ el.addEventListener("click",()=>openPerson(el.dataset.person));
+ el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" ") {e.preventDefault();openPerson(el.dataset.person)}})
+});
+modal.querySelectorAll("[data-close]").forEach(el=>el.addEventListener("click",closePerson));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePerson()});
+</script>
+
+
+<script>
+const tracks=[
+ {src:"music/track1.mp3",title:"Юность в сапогах"},
+ {src:"music/track2.mp3",title:"Полковнику никто не пишет"},
+ {src:"music/track3.mp3",title:"Прощание славянки"},
+ {src:"music/track4.mp3",title:"Новый гимн Республики Крым"},
+ {src:"music/track5.mp3",title:"Служить России"}
+];
+const widget=document.getElementById("musicWidget"),fab=document.getElementById("musicFab"),min=document.getElementById("musicMin");
+const audio=document.getElementById("siteAudio"),play=document.getElementById("playBtn"),title=document.getElementById("musicTitle");
+const progress=document.getElementById("musicProgress"),vol=document.getElementById("volume"),cur=document.getElementById("currentTime"),dur=document.getElementById("duration");
+let idx=0;
+function fmt(v){if(!isFinite(v))return"0:00";let m=Math.floor(v/60),sec=Math.floor(v%60).toString().padStart(2,"0");return m+":"+sec}
+function loadTrack(i,autoplay=false){idx=(i+tracks.length)%tracks.length;audio.src=tracks[idx].src;title.textContent=tracks[idx].title;progress.value=0;cur.textContent="0:00";dur.textContent="0:00";if(autoplay)audio.play().catch(()=>{})}
+function updatePlay(){play.textContent=audio.paused?"▶":"Ⅱ";play.setAttribute("aria-label",audio.paused?"Воспроизвести":"Пауза")}
+fab.onclick=()=>widget.classList.toggle("open");
+min.onclick=()=>widget.classList.remove("open");
+play.onclick=()=>audio.paused?audio.play():audio.pause();
+document.getElementById("prevBtn").onclick=()=>loadTrack(idx-1,true);
+document.getElementById("nextBtn").onclick=()=>loadTrack(idx+1,true);
+progress.oninput=()=>{if(audio.duration)audio.currentTime=audio.duration*(progress.value/100)};
+vol.oninput=()=>audio.volume=vol.value;
+audio.addEventListener("loadedmetadata",()=>dur.textContent=fmt(audio.duration));
+audio.addEventListener("timeupdate",()=>{cur.textContent=fmt(audio.currentTime);progress.value=audio.duration?(audio.currentTime/audio.duration*100):0});
+audio.addEventListener("play",updatePlay);audio.addEventListener("pause",updatePlay);audio.addEventListener("ended",()=>loadTrack(idx+1,true));
+audio.volume=.75;loadTrack(0,false);
+</script>
+
+
+<script>
+(function(){
+  const navLinks=[...document.querySelectorAll(".links a")];
+  const sections=[
+    ["home","Главная"],["about","Об отряде"],["news","Новости"],["team","Наша команда"],
+    ["directions","Мероприятия"],["achievements","Достижения"],
+    ["gallery","Галерея"],["contacts","Контакты"],["survey","Анкета"]
+  ];
+  const indicator=document.getElementById("sectionCurrent");
+  const label=indicator?.querySelector("span");
+  const map=new Map(navLinks.map(a=>[a.getAttribute("href").slice(1),a]));
+  let current="home";
+  function setCurrent(id,name){
+    if(id===current)return;
+    current=id;
+    navLinks.forEach(a=>a.classList.remove("active"));
+    map.get(id)?.classList.add("active");
+    if(label)label.textContent=name;
+    if(indicator)indicator.classList.add("show");
+  }
+  function update(){
+    const point=window.scrollY+window.innerHeight*0.32;
+    let chosen=sections[0];
+    for(const [id,name] of sections){
+      const el=document.getElementById(id);
+      if(el && el.offsetTop<=point) chosen=[id,name];
+    }
+    setCurrent(chosen[0],chosen[1]);
+    if(window.scrollY<80) indicator?.classList.remove("show");
+  }
+  window.addEventListener("scroll",update,{passive:true});
+  window.addEventListener("resize",update);
+  update();
+})();
+</script>
+
+
+<script>
+(async function loadPublicNews(){
+  const grid=document.getElementById('newsGrid');
+  if(!grid)return;
+  try{
+    const response=await fetch('/api/posts');
+    if(!response.ok)throw new Error('Не удалось загрузить новости');
+    const posts=await response.json();
+    if(!Array.isArray(posts)||posts.length===0)return;
+    grid.innerHTML=posts.map(post=>{
+      const article=document.createElement('article');article.className='card news-card';
+      if(post.image_url){const img=document.createElement('img');img.className='news-image';img.src=post.image_url;img.alt=post.title||'Фото новости';img.loading='lazy';article.appendChild(img)}
+      const content=document.createElement('div');content.className='news-content';
+      const meta=document.createElement('div');meta.className='news-meta';
+      const date=post.created_at?new Date(post.created_at).toLocaleDateString('ru-RU'):'Новость отряда';
+      meta.textContent=(post.category?post.category+' · ':'')+date;
+      const title=document.createElement('h3');title.textContent=post.title||'Новость';
+      const body=document.createElement('p');body.textContent=post.body||'';
+      content.append(meta,title,body);article.appendChild(content);return article;
+    }).map(el=>{const holder=document.createElement('div');holder.appendChild(el);return holder.innerHTML}).join('');
+  }catch(error){console.warn('Новости временно недоступны:',error)}
+})();
+</script>
+
+</body></html>
