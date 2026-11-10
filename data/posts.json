@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "91ec6a1a-d3cd-4067-9939-11b2b44a03e4",
+    "title": "тест",
+    "body": "йй",
+    "category": "Новости",
+    "image_key": null,
+    "image_url": null,
+    "published": true,
+    "created_at": "2026-11-10T21:30:51.650Z"
+  }
+]
