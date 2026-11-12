@@ -2,6 +2,7 @@
 import express from 'express';
 import multer from 'multer';
 import crypto from 'node:crypto';
+import { neon } from '@neondatabase/serverless';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +14,7 @@ const BRANCH = process.env.GITHUB_BRANCH || 'main';
 const TOKEN = process.env.GITHUB_TOKEN;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const SESSION_SECRET = process.env.SESSION_SECRET;
+const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
 
 const DATA_FILE = 'data/posts.json';
 const MEMBERS_FILE = 'data/members.json';
@@ -452,7 +454,7 @@ app.get('/media/*', async (req, res) => {
     const key = req.params[0];
 
     if (
-      !/^uploads\/news\/[a-zA-Z0-9-]+\.(jpg|png|webp)$/.test(key)
+      !/^uploads\/(news|members)\/[a-zA-Z0-9-]+\.(jpg|png|webp)$/.test(key)
     ) {
       return res.sendStatus(404);
     }
@@ -617,6 +619,88 @@ app.delete('/api/posts', requireAdmin, async (req, res) => {
     res.status(500).json({
       error: 'Не удалось удалить публикацию'
     });
+  }
+});
+
+
+// Аналитика сайта: просмотры и активные посетители хранятся в Neon.
+function validAnalyticsInput(value, maxLength = 160) {
+  return typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= maxLength &&
+    /^[a-zA-Z0-9._:-]+$/.test(value);
+}
+
+app.post('/api/analytics/view', async (req, res) => {
+  try {
+    if (!sql) return res.status(503).json({ error: 'Не настроено подключение к Neon' });
+    const visitorId = req.body?.visitor_id;
+    const page = String(req.body?.page || '/').slice(0, 160);
+    if (!validAnalyticsInput(visitorId) || !page.startsWith('/')) {
+      return res.status(400).json({ error: 'Некорректные данные аналитики' });
+    }
+    await sql`INSERT INTO site_views (visitor_id, page) VALUES (${visitorId}, ${page})`;
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Analytics view error:', error);
+    res.status(500).json({ error: 'Не удалось записать просмотр' });
+  }
+});
+
+app.post('/api/analytics/heartbeat', async (req, res) => {
+  try {
+    if (!sql) return res.status(503).json({ error: 'Не настроено подключение к Neon' });
+    const visitorId = req.body?.visitor_id;
+    if (!validAnalyticsInput(visitorId)) {
+      return res.status(400).json({ error: 'Некорректный идентификатор посетителя' });
+    }
+    await sql`
+      INSERT INTO site_visitors_online (visitor_id, last_seen)
+      VALUES (${visitorId}, NOW())
+      ON CONFLICT (visitor_id)
+      DO UPDATE SET last_seen = NOW()
+    `;
+    res.json({ ok: true });
+  } catch (error) {
+    console.error('Analytics heartbeat error:', error);
+    res.status(500).json({ error: 'Не удалось обновить статус посетителя' });
+  }
+});
+
+async function countPhotosIn(folder) {
+  try {
+    const files = await githubRequest(folder);
+    if (!Array.isArray(files)) return 0;
+    return files.filter(file => /\.(jpe?g|png|webp)$/i.test(file.name || '')).length;
+  } catch (error) {
+    if (String(error.message).includes('404')) return 0;
+    throw error;
+  }
+}
+
+// Статистика для администратора.
+app.get('/api/stats', requireAdmin, async (req, res) => {
+  try {
+    if (!sql) return res.status(503).json({ error: 'Не настроено подключение к Neon' });
+    const [viewsRows, onlineRows, postsData, membersData, newsPhotos, memberPhotos] = await Promise.all([
+      sql`SELECT COUNT(*)::int AS total FROM site_views`,
+      sql`SELECT COUNT(*)::int AS total FROM site_visitors_online WHERE last_seen > NOW() - INTERVAL '2 minutes'`,
+      readPosts(),
+      readMembers(),
+      countPhotosIn('uploads/news'),
+      countPhotosIn('uploads/members')
+    ]);
+    res.set('Cache-Control', 'no-store');
+    res.json({
+      views: Number(viewsRows[0]?.total || 0),
+      online: Number(onlineRows[0]?.total || 0),
+      posts: postsData.posts.length,
+      members: membersData.members.length,
+      photos: newsPhotos + memberPhotos
+    });
+  } catch (error) {
+    console.error('Stats error:', error);
+    res.status(500).json({ error: 'Не удалось получить статистику. Проверьте таблицы Neon и доступ к GitHub.' });
   }
 });
 
