@@ -32,9 +32,9 @@
 <div class="hero"><div class="hero-copy"><h1>Добро пожаловать в<br> админ-панель <span>«Сапсан»</span></h1><p>Управляйте новостями, публикациями и контентом юнармейского отряда.</p></div></div>
 <div class="stats">
 <article class="stat"><div class="stat-top">Новости <span class="stat-icon">▤</span></div><strong id="statPosts">—</strong><small>Всего публикаций</small></article>
-<article class="stat"><div class="stat-top">Просмотры <span class="stat-icon">◉</span></div><strong>—</strong><small>Аналитика не подключена</small></article>
+<article class="stat"><div class="stat-top">Просмотры <span class="stat-icon">◉</span></div><strong id="statViews">—</strong><small><span id="statOnline">0</span> сейчас онлайн</small></article>
 <article class="stat"><div class="stat-top">Участники <span class="stat-icon">♟</span></div><strong id="statMembers">0</strong><small>В составе отряда</small></article>
-<article class="stat"><div class="stat-top">Фотографии <span class="stat-icon">▧</span></div><strong>—</strong><small>Количество не подсчитывается</small></article>
+<article class="stat"><div class="stat-top">Фотографии <span class="stat-icon">▧</span></div><strong id="statPhotos">—</strong><small>В новостях и составе отряда</small></article>
 </div>
 <div class="content-grid"><section class="panel"><div class="panel-head"><div><h2>▤　Последние новости</h2><p class="hint">Последние публикации на портале</p></div><button class="btn secondary" id="goNews">Все новости　→</button></div><div id="recentPosts" class="posts"><div class="empty">Загрузка публикаций…</div></div></section>
 <aside><section class="panel"><div class="panel-head"><div><h2>ϟ　Быстрые действия</h2><p class="hint">Управление порталом</p></div></div><div class="toolbar" style="display:grid"><button class="btn" id="newPostBtn">＋　Создать новость</button><button class="btn secondary" id="refreshBtn">↻　Обновить данные</button></div></section><section class="panel about" style="margin-top:18px"><div class="panel-head"><h2>ⓘ　О отряде</h2></div><h2 style="font-size:28px;margin:8px 0">Сапсан</h2><p class="muted">Юнармейский отряд<br>МБОУ СОШ №2<br>им. Л. П. Шведченко<br>г. Щёлкино</p></section></aside></div>
@@ -70,9 +70,22 @@
 </main></div>
 <script>
 const $=id=>document.getElementById(id);
-let posts=[];let currentImageKey=null;let previewUrl=null;
+let posts=[];let currentImageKey=null;let previewUrl=null;let statsTimer=null;
 async function api(url,options={}){const response=await fetch(url,{credentials:'same-origin',...options});let data={};try{data=await response.json()}catch{}if(!response.ok)throw new Error(data.error||`Ошибка ${response.status}`);return data}
-function showDashboard(){ $('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');loadPosts();loadMembers() }
+function showDashboard(){ $('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');loadPosts();loadMembers();loadStats();if(!statsTimer)statsTimer=setInterval(loadStats,15000) }
+async function loadStats(){
+  try{
+    const s=await api('/api/stats');
+    $('statViews').textContent=Number(s.views||0).toLocaleString('ru-RU');
+    $('statOnline').textContent=Number(s.online||0).toLocaleString('ru-RU');
+    $('statPhotos').textContent=Number(s.photos||0).toLocaleString('ru-RU');
+    $('statPosts').textContent=Number(s.posts||0).toLocaleString('ru-RU');
+    $('statMembers').textContent=Number(s.members||0).toLocaleString('ru-RU');
+  }catch(error){
+    $('statViews').textContent='—';$('statOnline').textContent='—';$('statPhotos').textContent='—';
+    console.warn('Статистика недоступна:',error.message);
+  }
+}
 function resetForm(){ $('postForm').reset();$('postId').value='';currentImageKey=null;$('formHeading').textContent='Новая публикация';$('saveBtn').textContent='ОПУБЛИКОВАТЬ';$('cancelEdit').classList.add('hidden');$('imagePreview').classList.add('hidden');$('formStatus').textContent='';if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null }
 async function loadPosts(){try{posts=await api('/api/admin/posts');renderPosts()}catch(error){$('postsList').innerHTML=`<div class="empty">${escapeHtml(error.message)}</div>`}}
 function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -80,7 +93,7 @@ function renderPosts(){const card=p=>`<article class="post"><img src="${p.image_
 function editPost(id){const p=posts.find(x=>x.id===id);if(!p)return;$('postId').value=p.id;$('title').value=p.title;$('body').value=p.body;$('category').value=p.category;currentImageKey=p.image_key||null;$('formHeading').textContent='Редактирование публикации';$('saveBtn').textContent='СОХРАНИТЬ ИЗМЕНЕНИЯ';$('cancelEdit').classList.remove('hidden');$('formStatus').textContent='';if(p.image_url){$('imagePreview').src=p.image_url;$('imagePreview').classList.remove('hidden')}window.scrollTo({top:0,behavior:'smooth'})}
 async function deletePost(id){const p=posts.find(x=>x.id===id);if(!p||!confirm(`Удалить публикацию «${p.title}»?`))return;try{await api('/api/posts',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});if($('postId').value===id)resetForm();await loadPosts()}catch(error){alert(error.message)}}
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginStatus').textContent='Проверяем пароль…';try{await api('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:$('password').value})});$('password').value='';showDashboard()}catch(error){$('loginStatus').textContent=error.message}});
-$('logoutBtn').onclick=async()=>{try{await api('/api/logout',{method:'POST'})}finally{$('dashboard').classList.add('hidden');$('loginPanel').classList.remove('hidden')}};
+$('logoutBtn').onclick=async()=>{try{await api('/api/logout',{method:'POST'})}finally{if(statsTimer){clearInterval(statsTimer);statsTimer=null;}$('dashboard').classList.add('hidden');$('loginPanel').classList.remove('hidden')}};
 $('cancelEdit').onclick=resetForm;
 $('image').addEventListener('change',()=>{const file=$('image').files[0];if(!file)return;if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=URL.createObjectURL(file);$('imagePreview').src=previewUrl;$('imagePreview').classList.remove('hidden')});
 $('postForm').addEventListener('submit',async e=>{e.preventDefault();const save=$('saveBtn');save.disabled=true;$('formStatus').textContent='Сохраняем публикацию…';try{let imageKey=currentImageKey;const file=$('image').files[0];if(file){const fd=new FormData();fd.append('image',file);const uploaded=await api('/api/upload',{method:'POST',body:fd});imageKey=uploaded.image_key}const id=$('postId').value;const payload={id,title:$('title').value,body:$('body').value,category:$('category').value,image_key:imageKey};await api('/api/posts',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});resetForm();$('formStatus').textContent='Публикация сохранена.';await loadPosts()}catch(error){$('formStatus').textContent=error.message}finally{save.disabled=false}});
@@ -155,7 +168,7 @@ function showHome(){setPanel('home')}
 function showNews(){setPanel('news')}
 function showTeam(){setPanel('team')}
 $('teamBackHome').onclick=showHome;
-$('goNews').onclick=showNews;document.querySelector('.nav a[href="#team"]').onclick=e=>{e.preventDefault();showTeam()};$('newPostBtn').onclick=()=>{showNews();resetForm();window.scrollTo({top:0,behavior:'smooth'})};$('backHome').onclick=showHome;$('refreshBtn').onclick=loadPosts;document.querySelector('.nav a[href="#home"]').onclick=e=>{e.preventDefault();showHome()};document.querySelector('.nav a[href="#news"]').onclick=e=>{e.preventDefault();showNews()};
+$('goNews').onclick=showNews;document.querySelector('.nav a[href="#team"]').onclick=e=>{e.preventDefault();showTeam()};$('newPostBtn').onclick=()=>{showNews();resetForm();window.scrollTo({top:0,behavior:'smooth'})};$('backHome').onclick=showHome;$('refreshBtn').onclick=()=>{loadPosts();loadMembers();loadStats()};document.querySelector('.nav a[href="#home"]').onclick=e=>{e.preventDefault();showHome()};document.querySelector('.nav a[href="#news"]').onclick=e=>{e.preventDefault();showNews()};
 
 
 </script></body></html>
