@@ -21,11 +21,14 @@
 .member-admin-actions button{border:1px solid var(--line);border-radius:8px;background:#211e25;color:#eee;padding:8px 10px;cursor:pointer}
 .member-admin-actions .delete{color:#ff8791;border-color:#67343b}
 @media(max-width:600px){.member-admin-card{grid-template-columns:58px minmax(0,1fr)}.member-admin-card img,.member-admin-placeholder{width:58px;height:58px}.member-admin-actions{grid-column:2}}
+
+.report-preview{background:#fff;color:#202020;border-radius:12px;padding:clamp(18px,4vw,48px);line-height:1.65;overflow-wrap:anywhere}.generated-report{max-width:850px;margin:auto;font-family:Arial,sans-serif}.generated-report h1{text-align:center;font-size:25px;margin:28px 0}.generated-report h2{font-size:17px;margin:24px 0 8px;border-bottom:1px solid #bbb;padding-bottom:5px}.report-org{text-align:center;font-weight:700;letter-spacing:.04em}.report-period{color:#444}.generated-report li{margin-bottom:10px}.report-sign{margin-top:48px}
+@media print{body{background:#fff!important;color:#111}.sidebar,.topbar,#loginPanel,#reportsSection>.heading,#reportsSection>.panel:first-of-type{display:none!important}.main{margin:0!important;padding:0!important}#reportsSection{display:block!important}.report-preview{padding:0}.generated-report{max-width:none}}
 </style></head><body>
 <div id="loginPanel" class="login-wrap"><section class="login"><div class="brand"><div class="brand-mark">С</div><div><b>САПСАН</b><small>ЮНАРМЕЙСКИЙ ОТРЯД</small></div></div><div class="eyebrow">ЗАКРЫТАЯ ЗОНА · АДМИНИСТРАТОР</div><h1>Вход в систему</h1><p class="muted">Управление официальным порталом отряда «Сапсан».</p><form id="loginForm"><div class="field"><label for="password">Пароль администратора</label><input id="password" type="password" autocomplete="current-password" required placeholder="Введите пароль"></div><button class="btn" type="submit">ВОЙТИ В ПАНЕЛЬ</button><p class="status" id="loginStatus" aria-live="polite"></p></form><p class="login-note">Доступ предназначен только для уполномоченного администратора.</p></section></div>
 <div id="dashboard" class="shell hidden">
 <aside class="sidebar"><div class="brand"><div class="brand-mark">С</div><div><b>САПСАН</b><small>АДМИН-ПАНЕЛЬ</small></div></div><div class="nav-label">РАБОЧЕЕ ПРОСТРАНСТВО</div>
-<nav class="nav"><a href="#home" class="active"><span class="ico">⌂</span>Главная</a><a href="#news"><span class="ico">▤</span>Новости</a><a href="#team"><span class="ico">♙</span>Состав отряда</a><a href="#events" title="Раздел будет добавлен позже"><span class="ico">▦</span>Мероприятия</a><a href="#gallery" title="Раздел будет добавлен позже"><span class="ico">▧</span>Файлы и медиа</a><a href="#awards" title="Раздел будет добавлен позже"><span class="ico">★</span>Достижения</a><a href="#history" title="Раздел будет добавлен позже"><span class="ico">⚙</span>Настройки</a></nav>
+<nav class="nav"><a href="#home" class="active"><span class="ico">⌂</span>Главная</a><a href="#news"><span class="ico">▤</span>Новости</a><a href="#team"><span class="ico">♙</span>Состав отряда</a><a href="#reports"><span class="ico">▧</span>Генератор отчётов</a><a href="#events" title="Раздел будет добавлен позже"><span class="ico">▦</span>Мероприятия</a><a href="#gallery" title="Раздел будет добавлен позже"><span class="ico">▧</span>Файлы и медиа</a><a href="#awards" title="Раздел будет добавлен позже"><span class="ico">★</span>Достижения</a><a href="#history" title="Раздел будет добавлен позже"><span class="ico">⚙</span>Настройки</a></nav>
 <div class="sidebar-bottom"><a class="nav" href="/" style="padding:12px;color:#eee">↗ На сайт</a><button class="logout" id="logoutBtn">⇥ Выйти из системы</button></div></aside>
 <main class="main"><div class="topbar"><div class="crumb">Сапсан　/　<span id="crumbCurrent">Админ-панель</span></div><div class="profile"><div class="avatar">А</div><div><strong>Администратор</strong><small>Полный доступ</small></div></div></div>
 <section id="homeSection">
@@ -66,6 +69,23 @@
     <div class="panel-head"><div><h2>Средняя группа</h2><p class="hint">Участники средней группы</p></div><span class="tag" id="middleTotal">0</span></div>
     <div id="middleList" class="posts"><div class="empty">Загрузка…</div></div>
   </section>
+</section>
+<section id="reportsSection" class="hidden">
+  <div class="heading"><div><div class="eyebrow">ДОКУМЕНТЫ И ОТЧЁТНОСТЬ</div><h1>Генератор отчётов</h1><p class="muted">Данные сайта подставляются автоматически. Факты о мероприятиях и результатах можно дополнить вручную.</p></div><button class="btn secondary" id="reportsBackHome">← На главную</button></div>
+  <section class="panel">
+    <div class="panel-head"><div><h2>Параметры отчёта</h2><p class="hint">Выберите тип и период. В отчёт попадут опубликованные новости и актуальный состав отряда.</p></div><span class="tag" id="reportDataStatus">Данные ещё не загружены</span></div>
+    <div class="form-grid">
+      <div class="field"><label for="reportType">Тип отчёта</label><select id="reportType"><option value="Ежемесячный отчёт">Ежемесячный отчёт</option><option value="Годовой отчёт">Годовой отчёт</option><option value="Отчёт о мероприятии">Отчёт о мероприятии</option><option value="Отчёт о соревновании">Отчёт о соревновании</option><option value="Статистический отчёт сайта">Статистический отчёт сайта</option></select></div>
+      <div class="field"><label for="reportTitle">Название / тема</label><input id="reportTitle" maxlength="180" placeholder="Например: Работа отряда за октябрь"></div>
+      <div class="field"><label for="reportFrom">Начало периода</label><input id="reportFrom" type="date"></div>
+      <div class="field"><label for="reportTo">Конец периода</label><input id="reportTo" type="date"></div>
+      <div class="field wide"><label for="reportManual">Ручное дополнение: мероприятия, участие и результаты</label><textarea id="reportManual" maxlength="12000" placeholder="Укажите то, чего нет на сайте: название мероприятия, дату, место, число участников, результаты, награды, организаторов и выводы."></textarea><p class="hint">Не добавляйте неподтверждённые сведения. Генератор не придумывает факты.</p></div>
+      <div class="field wide"><label for="reportConclusion">Выводы и планы на следующий период</label><textarea id="reportConclusion" maxlength="5000" placeholder="Краткие итоги работы и дальнейшие задачи..."></textarea></div>
+    </div>
+    <div class="toolbar"><button class="btn secondary" id="reloadReportData" type="button">↻ Загрузить данные сайта</button><button class="btn" id="generateReport" type="button">СФОРМИРОВАТЬ ПРЕДПРОСМОТР</button></div>
+    <p class="status" id="reportStatus" aria-live="polite"></p>
+  </section>
+  <section class="panel" style="margin-top:18px"><div class="panel-head"><div><h2>Предпросмотр отчёта</h2><p class="hint">Проверьте документ. Печать позволяет сохранить его в PDF.</p></div><button class="btn secondary" id="printReport" type="button" disabled>ПЕЧАТЬ / СОХРАНИТЬ PDF</button></div><div id="reportPreview" class="empty">Выберите параметры и сформируйте отчёт.</div></section>
 </section>
 </main></div>
 <script>
@@ -156,17 +176,53 @@ $('memberForm').addEventListener('submit',async e=>{
   finally{save.disabled=false}
 });
 
+
+// Генератор отчётов: фактические данные берём из API сайта, дополнительные сведения вводит администратор.
+let reportPosts=[];let reportMembers=[];let reportStats=null;let reportReady=false;
+const reportDate=v=>v?new Date(v).toLocaleDateString('ru-RU'):'';
+async function loadReportData(){
+  const status=$('reportStatus');status.textContent='Загружаем новости и состав отряда…';reportReady=false;
+  try{
+    const results=await Promise.all([api('/api/admin/posts'),api('/api/admin/members')]);
+    reportPosts=Array.isArray(results[0])?results[0]:[];reportMembers=Array.isArray(results[1])?results[1]:[];
+    try{reportStats=await api('/api/stats')}catch{reportStats=null}
+    reportReady=true;$('reportDataStatus').textContent='Данные загружены';
+    status.textContent=`Загружено: ${reportPosts.length} публикаций, ${reportMembers.length} участников.`;
+  }catch(error){$('reportDataStatus').textContent='Ошибка загрузки';status.textContent='Не удалось получить данные сайта: '+error.message}
+}
+function reportEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function generateReport(){
+  if(!reportReady){$('reportStatus').textContent='Сначала загрузите данные сайта.';return}
+  const from=$('reportFrom').value,to=$('reportTo').value;
+  if(from&&to&&from>to){$('reportStatus').textContent='Дата начала не может быть позже даты окончания.';return}
+  const inPeriod=p=>{const d=String(p.created_at||'').slice(0,10);return (!from||d>=from)&&(!to||d<=to)};
+  const filtered=reportPosts.filter(inPeriod).sort((a,b)=>String(a.created_at).localeCompare(String(b.created_at)));
+  const title=$('reportTitle').value.trim()||$('reportType').value;
+  const senior=reportMembers.filter(m=>m.group==='senior').length,middle=reportMembers.filter(m=>m.group==='middle').length;
+  const period=from||to?`${from?reportDate(from):'Начало периода не указано'} — ${to?reportDate(to):'Конец периода не указан'}`:'Период не ограничен';
+  const news=filtered.length?`<ol>${filtered.map(p=>`<li><b>${reportEscape(p.title)}</b> — ${reportEscape(reportDate(p.created_at))}. ${reportEscape(p.category||'Новости')}. ${reportEscape(p.body||'')}</li>`).join('')}</ol>`:'<p>За выбранный период публикаций не найдено.</p>';
+  const manual=$('reportManual').value.trim();const conclusion=$('reportConclusion').value.trim();
+  const stats=reportStats?`<p>Просмотры сайта: ${Number(reportStats.views||0).toLocaleString('ru-RU')}; фотографии: ${Number(reportStats.photos||0).toLocaleString('ru-RU')}.</p>`:'<p>Статистика просмотров и фотографий не включена: сервер не предоставил эти показатели.</p>';
+  const doc=`<article class="generated-report"><div class="report-org">ЮНАРМЕЙСКИЙ ОТРЯД «САПСАН»<br>МБОУ СОШ №2 им. Л. П. Шведченко, г. Щёлкино</div><h1>${reportEscape(title)}</h1><p class="report-period"><b>Тип:</b> ${reportEscape($('reportType').value)}<br><b>Период:</b> ${reportEscape(period)}<br><b>Дата формирования:</b> ${reportEscape(reportDate(new Date().toISOString()))}</p><h2>1. Общая информация</h2><p>В составе отряда числится ${reportMembers.length} участников: старшая группа — ${senior}, средняя группа — ${middle}.</p><h2>2. Информация с сайта</h2><p>За выбранный период опубликовано новостей: ${filtered.length}.</p>${news}<h2>3. Статистика портала</h2>${stats}<h2>4. Мероприятия, участие и результаты</h2>${manual?`<div class="report-preserve">${reportEscape(manual).replace(/\n/g,'<br>')}</div>`:'<p>Дополнительные сведения не внесены.</p>'}<h2>5. Выводы и планы</h2>${conclusion?`<div class="report-preserve">${reportEscape(conclusion).replace(/\n/g,'<br>')}</div>`:'<p>Выводы и планы не внесены.</p>'}<div class="report-sign">Ответственный за подготовку отчёта: ____________________<br><br>Подпись: ____________________</div></article>`;
+  $('reportPreview').className='report-preview';$('reportPreview').innerHTML=doc;$('printReport').disabled=false;$('reportStatus').textContent=`Предпросмотр сформирован. В отчёт включено ${filtered.length} публикаций.`;
+}
+$('reloadReportData').onclick=loadReportData;$('generateReport').onclick=generateReport;
+$('printReport').onclick=()=>{const content=$('reportPreview').innerHTML;if(!content||$('printReport').disabled)return;const w=window.open('','_blank');if(!w){$('reportStatus').textContent='Браузер заблокировал окно печати. Разрешите всплывающие окна для сайта.';return}w.document.write(`<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Отчёт — Сапсан</title><style>body{font:14px Arial,sans-serif;color:#171717;line-height:1.6;margin:25mm 20mm}.report-org{text-align:center;font-weight:bold;letter-spacing:.04em;margin-bottom:35px}.generated-report h1{text-align:center;font-size:22px;margin:20px 0}.generated-report h2{font-size:16px;margin:24px 0 8px;border-bottom:1px solid #aaa;padding-bottom:5px}.report-period{margin:20px 0}.generated-report li{margin:0 0 10px}.report-sign{margin-top:55px}.report-preserve{white-space:normal}@media print{body{margin:18mm}}</style></head><body>${content}</body></html>`);w.document.close();w.focus();w.print()};
+
 // Навигация панели
 function setPanel(name){
-  $('homeSection').classList.toggle('hidden',name!=='home');$('newsSection').classList.toggle('hidden',name!=='news');$('teamSection').classList.toggle('hidden',name!=='team');
-  $('crumbCurrent').textContent=name==='home'?'Главная':name==='news'?'Новости':'Состав отряда';
+  $('homeSection').classList.toggle('hidden',name!=='home');$('newsSection').classList.toggle('hidden',name!=='news');$('teamSection').classList.toggle('hidden',name!=='team');$('reportsSection').classList.toggle('hidden',name!=='reports');
+  $('crumbCurrent').textContent=name==='home'?'Главная':name==='news'?'Новости':name==='team'?'Состав отряда':'Генератор отчётов';
   document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));
   document.querySelector(`.nav a[href="#${name}"]`)?.classList.add('active');
-  if(name==='team')loadMembers();
+  if(name==='team')loadMembers();if(name==='reports')loadReportData();
 }
 function showHome(){setPanel('home')}
 function showNews(){setPanel('news')}
 function showTeam(){setPanel('team')}
+function showReports(){setPanel('reports')}
+$('reportsBackHome').onclick=showHome;
+document.querySelector('.nav a[href="#reports"]').onclick=e=>{e.preventDefault();showReports()};
 $('teamBackHome').onclick=showHome;
 $('goNews').onclick=showNews;document.querySelector('.nav a[href="#team"]').onclick=e=>{e.preventDefault();showTeam()};$('newPostBtn').onclick=()=>{showNews();resetForm();window.scrollTo({top:0,behavior:'smooth'})};$('backHome').onclick=showHome;$('refreshBtn').onclick=()=>{loadPosts();loadMembers();loadStats()};document.querySelector('.nav a[href="#home"]').onclick=e=>{e.preventDefault();showHome()};document.querySelector('.nav a[href="#news"]').onclick=e=>{e.preventDefault();showNews()};
 
