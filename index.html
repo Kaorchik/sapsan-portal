@@ -613,23 +613,42 @@ audio.volume=.75;loadTrack(0,false);
 })();
 </script>
 
+
+
 <script>
-(async function loadPublicMembers(){
-  const senior=document.getElementById('seniorMembers'), middle=document.getElementById('middleMembers');
-  if(!senior||!middle)return;
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  try{
-    const response=await fetch('/api/members',{cache:'no-store'});
-    if(!response.ok)throw new Error('Не удалось загрузить состав');
-    const members=await response.json();
-    const render=(group,container,count)=>{
-      const list=members.filter(m=>m.group===group).sort((a,b)=>(a.sort_order??999)-(b.sort_order??999));
-      count.textContent=list.length+' УЧАСТНИКОВ';
-      container.innerHTML=list.length?list.map(m=>`<article class="roster-card"><div class="roster-photo">${m.image_url?`<img src="${esc(m.image_url)}" alt="${esc(m.name)}" loading="lazy">`:'<span class="roster-placeholder">✦</span>'}</div><div class="roster-copy">${m.role?`<div class="roster-role">${esc(m.role)}</div>`:''}<h4>${esc(m.name)}</h4>${m.description?`<p>${esc(m.description)}</p>`:''}</div></article>`).join(''):'<div class="roster-empty">Состав пока не добавлен.</div>';
-    };
-    render('senior',senior,document.getElementById('seniorCount'));
-    render('middle',middle,document.getElementById('middleCount'));
-  }catch(error){console.warn('Состав временно недоступен:',error)}
+// Анонимная аналитика: случайный ID хранится в браузере, IP не сохраняется.
+(async function startSapsanAnalytics(){
+  let visitorId;
+  try {
+    visitorId = localStorage.getItem('sapsan_visitor_id');
+    if (!visitorId) {
+      visitorId = (crypto.randomUUID ? crypto.randomUUID() : 'v-' + Math.random().toString(36).slice(2) + Date.now().toString(36));
+      localStorage.setItem('sapsan_visitor_id', visitorId);
+    }
+  } catch {
+    visitorId = 'session-' + Math.random().toString(36).slice(2);
+  }
+
+  const send = (url, payload) => fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    keepalive: true
+  }).catch(() => {});
+
+  const page = location.pathname || '/';
+  const viewKey = 'sapsan_viewed_' + page;
+  try {
+    if (!sessionStorage.getItem(viewKey)) {
+      await send('/api/analytics/view', { visitor_id: visitorId, page });
+      sessionStorage.setItem(viewKey, '1');
+    }
+  } catch {}
+
+  const heartbeat = () => send('/api/analytics/heartbeat', { visitor_id: visitorId });
+  heartbeat();
+  setInterval(heartbeat, 30000);
 })();
 </script>
+
 </body></html>
