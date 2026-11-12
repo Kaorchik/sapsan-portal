@@ -232,6 +232,26 @@ section{max-width:1320px;padding:105px 28px}.kicker{letter-spacing:.25em}
 .news-empty{grid-column:1/-1}
 @media(max-width:800px){.news-grid{grid-template-columns:1fr}}
 
+
+/* Состав отряда: старшая и средняя группы */
+.roster-section{max-width:1150px;margin:auto;padding:90px 22px}
+.roster-group{margin-top:42px}
+.roster-group-head{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.roster-group-head h3{font-size:25px;margin:0;letter-spacing:-.03em}
+.roster-count{font-size:11px;letter-spacing:.15em;color:#d95a64}
+.roster-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:20px}
+.roster-card{overflow:hidden;background:linear-gradient(145deg,#15191f,#0d1116);border:1px solid #30343b;border-radius:16px;transition:transform .25s,border-color .25s}
+.roster-card:hover{transform:translateY(-4px);border-color:#9e303a}
+.roster-photo{aspect-ratio:4/3;background:#171b21;display:grid;place-items:center;overflow:hidden}
+.roster-photo img{width:100%;height:100%;object-fit:cover;object-position:center 25%}
+.roster-placeholder{font-size:42px;color:#69717b}
+.roster-copy{padding:18px}
+.roster-role{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#d45a64;margin-bottom:8px}
+.roster-copy h4{font-size:18px;line-height:1.25;margin:0 0 8px;color:#f4f5f6}
+.roster-copy p{font-size:13px;line-height:1.55;color:var(--muted);margin:0}
+.roster-empty{grid-column:1/-1;padding:22px;border:1px dashed #39424c;border-radius:12px;color:#87929d}
+@media(max-width:800px){.roster-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.roster-grid{grid-template-columns:1fr}.roster-card{display:grid;grid-template-columns:112px 1fr;min-height:130px}.roster-photo{aspect-ratio:auto;min-height:130px}.roster-copy{padding:14px}.roster-copy h4{font-size:16px}}
 </style>
 </head>
 <body>
@@ -244,6 +264,7 @@ section{max-width:1320px;padding:105px 28px}.kicker{letter-spacing:.25em}
     <div class="links">
       <a class="active" href="#home">Главная</a>
       <a href="#about">Об отряде</a>
+      <a href="#roster">Состав отряда</a>
       <a href="#news">Новости</a>
       <a href="#team">Наша команда</a>
       <a href="#directions">Мероприятия</a>
@@ -310,6 +331,21 @@ section{max-width:1320px;padding:105px 28px}.kicker{letter-spacing:.25em}
 </div>
 
 <div class="grid"><article class="card"><h3>Команда</h3><p>Учимся действовать вместе и отвечать за общий результат.</p></article><article class="card"><h3>Движение</h3><p>Участвуем в школьных, городских и военно-патриотических мероприятиях.</p></article><article class="card"><h3>Развитие</h3><p>Осваиваем новые навыки — от строевой подготовки до медиа.</p></article></div></section>
+
+
+<section id="roster" class="roster-section">
+  <div class="kicker">01.1 · ЛЮДИ ОТРЯДА</div>
+  <h2>Наш состав.</h2>
+  <p class="lead">Участники старшей и средней групп юнармейского отряда «Сапсан».</p>
+  <div class="roster-group">
+    <div class="roster-group-head"><h3>Старшая группа</h3><span class="roster-count" id="seniorCount">0 УЧАСТНИКОВ</span></div>
+    <div class="roster-grid" id="seniorMembers"><div class="roster-empty">Состав старшей группы пока не добавлен.</div></div>
+  </div>
+  <div class="roster-group">
+    <div class="roster-group-head"><h3>Средняя группа</h3><span class="roster-count" id="middleCount">0 УЧАСТНИКОВ</span></div>
+    <div class="roster-grid" id="middleMembers"><div class="roster-empty">Состав средней группы пока не добавлен.</div></div>
+  </div>
+</section>
 
 <section id="news">
   <div class="kicker">02 · НОВОСТИ</div>
@@ -498,7 +534,7 @@ audio.volume=.75;loadTrack(0,false);
 (function(){
   const navLinks=[...document.querySelectorAll(".links a")];
   const sections=[
-    ["home","Главная"],["about","Об отряде"],["news","Новости"],["team","Наша команда"],
+    ["home","Главная"],["about","Об отряде"],["roster","Состав отряда"],["news","Новости"],["team","Наша команда"],
     ["directions","Мероприятия"],["achievements","Достижения"],
     ["gallery","Галерея"],["contacts","Контакты"],["survey","Анкета"]
   ];
@@ -555,4 +591,45 @@ audio.volume=.75;loadTrack(0,false);
 })();
 </script>
 
+
+<script>
+(async function loadPublicMembers(){
+  const senior=document.getElementById('seniorMembers');
+  const middle=document.getElementById('middleMembers');
+  if(!senior||!middle)return;
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  try{
+    const response=await fetch('/api/members',{cache:'no-store'});
+    if(!response.ok)throw new Error('Не удалось загрузить состав');
+    const members=await response.json();
+    const render=(group,container,count)=>{
+      const list=members.filter(m=>m.group===group).sort((a,b)=>(a.sort_order??999)-(b.sort_order??999));
+      count.textContent=list.length+' УЧАСТНИКОВ';
+      container.innerHTML=list.length?list.map(m=>`<article class="roster-card"><div class="roster-photo">${m.image_url?`<img src="${esc(m.image_url)}" alt="${esc(m.name)}" loading="lazy">`:'<span class="roster-placeholder">✦</span>'}</div><div class="roster-copy">${m.role?`<div class="roster-role">${esc(m.role)}</div>`:''}<h4>${esc(m.name)}</h4>${m.description?`<p>${esc(m.description)}</p>`:''}</div></article>`).join(''):'<div class="roster-empty">Состав пока не добавлен.</div>';
+    };
+    render('senior',senior,document.getElementById('seniorCount'));
+    render('middle',middle,document.getElementById('middleCount'));
+  }catch(error){console.warn('Состав временно недоступен:',error)}
+})();
+</script>
+
+<script>
+(async function loadPublicMembers(){
+  const senior=document.getElementById('seniorMembers'), middle=document.getElementById('middleMembers');
+  if(!senior||!middle)return;
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  try{
+    const response=await fetch('/api/members',{cache:'no-store'});
+    if(!response.ok)throw new Error('Не удалось загрузить состав');
+    const members=await response.json();
+    const render=(group,container,count)=>{
+      const list=members.filter(m=>m.group===group).sort((a,b)=>(a.sort_order??999)-(b.sort_order??999));
+      count.textContent=list.length+' УЧАСТНИКОВ';
+      container.innerHTML=list.length?list.map(m=>`<article class="roster-card"><div class="roster-photo">${m.image_url?`<img src="${esc(m.image_url)}" alt="${esc(m.name)}" loading="lazy">`:'<span class="roster-placeholder">✦</span>'}</div><div class="roster-copy">${m.role?`<div class="roster-role">${esc(m.role)}</div>`:''}<h4>${esc(m.name)}</h4>${m.description?`<p>${esc(m.description)}</p>`:''}</div></article>`).join(''):'<div class="roster-empty">Состав пока не добавлен.</div>';
+    };
+    render('senior',senior,document.getElementById('seniorCount'));
+    render('middle',middle,document.getElementById('middleCount'));
+  }catch(error){console.warn('Состав временно недоступен:',error)}
+})();
+</script>
 </body></html>
