@@ -2,7 +2,6 @@
 import express from 'express';
 import multer from 'multer';
 import crypto from 'node:crypto';
-import { neon } from '@neondatabase/serverless';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,10 +13,12 @@ const BRANCH = process.env.GITHUB_BRANCH || 'main';
 const TOKEN = process.env.GITHUB_TOKEN;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const SESSION_SECRET = process.env.SESSION_SECRET;
-const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
 
 const DATA_FILE = 'data/posts.json';
 const MEMBERS_FILE = 'data/members.json';
+const GALLERY_FILE = 'data/gallery.json';
+const REPORTS_FILE = 'data/reports.json';
+const EVENTS_FILE = 'data/events.json';
 
 app.disable('x-powered-by');
 app.use(express.json({ limit: '1mb' }));
@@ -220,6 +221,16 @@ async function saveMembers(members, sha) {
   });
 }
 
+
+async function readJsonArray(path, label) {
+  try { const file = await githubRequest(path); const rows = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')); if (!Array.isArray(rows)) throw new Error(`${label} должен содержать массив`); return { rows, sha: file.sha }; }
+  catch (error) { if (String(error.message).includes('404')) return { rows: [], sha: null }; throw error; }
+}
+async function saveJsonArray(path, rows, sha, message) {
+  const content = Buffer.from(JSON.stringify(rows, null, 2)).toString('base64');
+  await githubRequest(path, { method: 'PUT', body: JSON.stringify({ message, content, branch: BRANCH, ...(sha ? { sha } : {}) }) });
+}
+
 // Вход администратора.
 app.post('/api/login', (req, res) => {
   if (!ADMIN_PASSWORD || !SESSION_SECRET) {
@@ -390,6 +401,23 @@ app.delete('/api/members', requireAdmin, async (req, res) => {
   }
 });
 
+// Календарь мероприятий: данные доступны только после входа администратора.
+app.get('/api/admin/events', requireAdmin, async (req, res) => { try { const { rows } = await readJsonArray(EVENTS_FILE, 'events.json'); res.json(rows); } catch (error) { console.error(error); res.status(500).json({ error: 'Не удалось загрузить мероприятия' }); } });
+app.post('/api/admin/events', requireAdmin, async (req, res) => { try { const title=String(req.body.title||'').trim().slice(0,160); const date=String(req.body.date||'').slice(0,10); if(!title||!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({error:'Укажите название и корректную дату мероприятия'}); const {rows,sha}=await readJsonArray(EVENTS_FILE,'events.json'); const item={id:crypto.randomUUID(),title,date,time:String(req.body.time||'').slice(0,5),place:String(req.body.place||'').trim().slice(0,180),status:['planned','done','cancelled'].includes(req.body.status)?req.body.status:'planned',responsible:String(req.body.responsible||'').trim().slice(0,140),description:String(req.body.description||'').trim().slice(0,4000),created_at:new Date().toISOString(),updated_at:new Date().toISOString()}; rows.push(item); await saveJsonArray(EVENTS_FILE,rows,sha,'Add Sapsan event'); res.json({ok:true,id:item.id}); } catch(error){console.error(error);res.status(500).json({error:'Не удалось сохранить мероприятие'});} });
+app.put('/api/admin/events', requireAdmin, async (req, res) => { try { const {rows,sha}=await readJsonArray(EVENTS_FILE,'events.json'); const item=rows.find(x=>x.id===String(req.body.id||'')); if(!item)return res.status(404).json({error:'Мероприятие не найдено'}); const title=String(req.body.title||'').trim().slice(0,160); const date=String(req.body.date||'').slice(0,10); if(!title||!/^\d{4}-\d{2}-\d{2}$/.test(date))return res.status(400).json({error:'Укажите название и корректную дату мероприятия'}); Object.assign(item,{title,date,time:String(req.body.time||'').slice(0,5),place:String(req.body.place||'').trim().slice(0,180),status:['planned','done','cancelled'].includes(req.body.status)?req.body.status:'planned',responsible:String(req.body.responsible||'').trim().slice(0,140),description:String(req.body.description||'').trim().slice(0,4000),updated_at:new Date().toISOString()}); await saveJsonArray(EVENTS_FILE,rows,sha,'Update Sapsan event'); res.json({ok:true}); } catch(error){console.error(error);res.status(500).json({error:'Не удалось изменить мероприятие'});} });
+app.delete('/api/admin/events', requireAdmin, async (req, res) => { try { const {rows,sha}=await readJsonArray(EVENTS_FILE,'events.json'); const filtered=rows.filter(x=>x.id!==String(req.body.id||'')); if(filtered.length===rows.length)return res.status(404).json({error:'Мероприятие не найдено'}); await saveJsonArray(EVENTS_FILE,filtered,sha,'Delete Sapsan event'); res.json({ok:true}); } catch(error){console.error(error);res.status(500).json({error:'Не удалось удалить мероприятие'});} });
+
+// Фотогалерея сайта: публичное чтение и административное управление.
+app.get('/api/gallery', async (req, res) => { try { const { rows } = await readJsonArray(GALLERY_FILE, 'gallery.json'); res.set('Cache-Control', 'no-store'); res.json(rows); } catch (error) { console.error(error); res.status(500).json({ error: 'Не удалось загрузить фотогалерею' }); } });
+app.get('/api/admin/gallery', requireAdmin, async (req, res) => { try { const { rows } = await readJsonArray(GALLERY_FILE, 'gallery.json'); res.json(rows); } catch (error) { console.error(error); res.status(500).json({ error: 'Не удалось загрузить фотогалерею' }); } });
+app.post('/api/admin/gallery', requireAdmin, async (req, res) => { try { const imageKey = String(req.body.image_key || ''); if (!/^uploads\/gallery\/[a-zA-Z0-9-]+\.(jpg|png|webp)$/.test(imageKey)) return res.status(400).json({ error: 'Некорректный файл фотографии' }); const { rows, sha } = await readJsonArray(GALLERY_FILE, 'gallery.json'); const item = { id: crypto.randomUUID(), title: String(req.body.title || '').trim().slice(0,160), category: String(req.body.category || 'Другое').slice(0,80), image_key: imageKey, image_url: `/media/${imageKey}`, created_at: new Date().toISOString() }; rows.unshift(item); await saveJsonArray(GALLERY_FILE, rows, sha, 'Add Sapsan gallery photo'); res.json({ ok: true, item }); } catch (error) { console.error(error); res.status(500).json({ error: 'Не удалось добавить фотографию' }); } });
+app.delete('/api/admin/gallery', requireAdmin, async (req, res) => { try { const { rows, sha } = await readJsonArray(GALLERY_FILE, 'gallery.json'); const filtered = rows.filter(x => x.id !== String(req.body.id || '')); if (filtered.length === rows.length) return res.status(404).json({ error: 'Фотография не найдена' }); await saveJsonArray(GALLERY_FILE, filtered, sha, 'Remove Sapsan gallery photo'); res.json({ ok: true }); } catch (error) { console.error(error); res.status(500).json({ error: 'Не удалось удалить фотографию из галереи' }); } });
+
+// История документов администратора.
+app.get('/api/admin/reports', requireAdmin, async (req, res) => { try { const { rows } = await readJsonArray(REPORTS_FILE, 'reports.json'); res.json(rows); } catch (error) { console.error(error); res.status(500).json({ error: 'Не удалось загрузить историю документов' }); } });
+app.post('/api/admin/reports', requireAdmin, async (req, res) => { try { const title = String(req.body.title || '').trim().slice(0,180); const html = String(req.body.html || ''); if (!title || !html || html.length > 180000) return res.status(400).json({ error: 'Документ пустой или слишком большой' }); const { rows, sha } = await readJsonArray(REPORTS_FILE, 'reports.json'); const item = { id: crypto.randomUUID(), title, doc_type: String(req.body.doc_type || 'Документ').slice(0,80), doc_date: String(req.body.doc_date || '').slice(0,20), doc_no: String(req.body.doc_no || '').slice(0,40), html, created_at: new Date().toISOString() }; rows.unshift(item); if (rows.length > 100) rows.length = 100; await saveJsonArray(REPORTS_FILE, rows, sha, 'Save Sapsan document history'); res.json({ ok: true, id: item.id }); } catch (error) { console.error(error); res.status(500).json({ error: 'Не удалось сохранить документ в историю' }); } });
+app.delete('/api/admin/reports', requireAdmin, async (req, res) => { try { const { rows, sha } = await readJsonArray(REPORTS_FILE, 'reports.json'); const filtered = rows.filter(x => x.id !== String(req.body.id || '')); if (filtered.length === rows.length) return res.status(404).json({ error: 'Документ не найден' }); await saveJsonArray(REPORTS_FILE, filtered, sha, 'Delete Sapsan document history'); res.json({ ok: true }); } catch (error) { console.error(error); res.status(500).json({ error: 'Не удалось удалить документ' }); } });
+
 // Загрузка фотографии в GitHub.
 app.post(
   '/api/upload',
@@ -421,13 +449,13 @@ app.post(
         ? 'jpg'
         : file.mimetype.split('/')[1];
 
-      const folder = req.body?.type === 'member' ? 'uploads/members' : 'uploads/news';
+      const folder = req.body?.type === 'member' ? 'uploads/members' : req.body?.type === 'gallery' ? 'uploads/gallery' : 'uploads/news';
       const key = `${folder}/${crypto.randomUUID()}.${ext}`;
 
       await githubRequest(key, {
         method: 'PUT',
         body: JSON.stringify({
-          message: folder === 'uploads/members' ? 'Upload Sapsan member photo' : 'Upload Sapsan news image',
+          message: folder === 'uploads/members' ? 'Upload Sapsan member photo' : folder === 'uploads/gallery' ? 'Upload Sapsan gallery photo' : 'Upload Sapsan news image',
           content: file.buffer.toString('base64'),
           branch: BRANCH
         })
@@ -454,7 +482,7 @@ app.get('/media/*', async (req, res) => {
     const key = req.params[0];
 
     if (
-      !/^uploads\/(news|members)\/[a-zA-Z0-9-]+\.(jpg|png|webp)$/.test(key)
+      !/^uploads\/(news|members|gallery)\/[a-zA-Z0-9-]+\.(jpg|png|webp)$/.test(key)
     ) {
       return res.sendStatus(404);
     }
@@ -619,88 +647,6 @@ app.delete('/api/posts', requireAdmin, async (req, res) => {
     res.status(500).json({
       error: 'Не удалось удалить публикацию'
     });
-  }
-});
-
-
-// Аналитика сайта: просмотры и активные посетители хранятся в Neon.
-function validAnalyticsInput(value, maxLength = 160) {
-  return typeof value === 'string' &&
-    value.length > 0 &&
-    value.length <= maxLength &&
-    /^[a-zA-Z0-9._:-]+$/.test(value);
-}
-
-app.post('/api/analytics/view', async (req, res) => {
-  try {
-    if (!sql) return res.status(503).json({ error: 'Не настроено подключение к Neon' });
-    const visitorId = req.body?.visitor_id;
-    const page = String(req.body?.page || '/').slice(0, 160);
-    if (!validAnalyticsInput(visitorId) || !page.startsWith('/')) {
-      return res.status(400).json({ error: 'Некорректные данные аналитики' });
-    }
-    await sql`INSERT INTO site_views (visitor_id, page) VALUES (${visitorId}, ${page})`;
-    res.json({ ok: true });
-  } catch (error) {
-    console.error('Analytics view error:', error);
-    res.status(500).json({ error: 'Не удалось записать просмотр' });
-  }
-});
-
-app.post('/api/analytics/heartbeat', async (req, res) => {
-  try {
-    if (!sql) return res.status(503).json({ error: 'Не настроено подключение к Neon' });
-    const visitorId = req.body?.visitor_id;
-    if (!validAnalyticsInput(visitorId)) {
-      return res.status(400).json({ error: 'Некорректный идентификатор посетителя' });
-    }
-    await sql`
-      INSERT INTO site_visitors_online (visitor_id, last_seen)
-      VALUES (${visitorId}, NOW())
-      ON CONFLICT (visitor_id)
-      DO UPDATE SET last_seen = NOW()
-    `;
-    res.json({ ok: true });
-  } catch (error) {
-    console.error('Analytics heartbeat error:', error);
-    res.status(500).json({ error: 'Не удалось обновить статус посетителя' });
-  }
-});
-
-async function countPhotosIn(folder) {
-  try {
-    const files = await githubRequest(folder);
-    if (!Array.isArray(files)) return 0;
-    return files.filter(file => /\.(jpe?g|png|webp)$/i.test(file.name || '')).length;
-  } catch (error) {
-    if (String(error.message).includes('404')) return 0;
-    throw error;
-  }
-}
-
-// Статистика для администратора.
-app.get('/api/stats', requireAdmin, async (req, res) => {
-  try {
-    if (!sql) return res.status(503).json({ error: 'Не настроено подключение к Neon' });
-    const [viewsRows, onlineRows, postsData, membersData, newsPhotos, memberPhotos] = await Promise.all([
-      sql`SELECT COUNT(*)::int AS total FROM site_views`,
-      sql`SELECT COUNT(*)::int AS total FROM site_visitors_online WHERE last_seen > NOW() - INTERVAL '2 minutes'`,
-      readPosts(),
-      readMembers(),
-      countPhotosIn('uploads/news'),
-      countPhotosIn('uploads/members')
-    ]);
-    res.set('Cache-Control', 'no-store');
-    res.json({
-      views: Number(viewsRows[0]?.total || 0),
-      online: Number(onlineRows[0]?.total || 0),
-      posts: postsData.posts.length,
-      members: membersData.members.length,
-      photos: newsPhotos + memberPhotos
-    });
-  } catch (error) {
-    console.error('Stats error:', error);
-    res.status(500).json({ error: 'Не удалось получить статистику. Проверьте таблицы Neon и доступ к GitHub.' });
   }
 });
 
