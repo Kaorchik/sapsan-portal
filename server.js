@@ -15,6 +15,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const SESSION_SECRET = process.env.SESSION_SECRET;
 
 const DATA_FILE = 'data/posts.json';
+const MEMBERS_FILE = 'data/members.json';
 
 app.disable('x-powered-by');
 app.use(express.json({ limit: '1mb' }));
@@ -189,6 +190,34 @@ async function savePosts(posts, sha) {
   });
 }
 
+
+// Чтение состава отряда.
+async function readMembers() {
+  try {
+    const file = await githubRequest(MEMBERS_FILE);
+    const members = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8'));
+    if (!Array.isArray(members)) throw new Error('Файл members.json должен содержать массив');
+    return { members, sha: file.sha };
+  } catch (error) {
+    if (String(error.message).includes('404')) return { members: [], sha: null };
+    throw error;
+  }
+}
+
+// Сохранение состава отряда.
+async function saveMembers(members, sha) {
+  const content = Buffer.from(JSON.stringify(members, null, 2)).toString('base64');
+  await githubRequest(MEMBERS_FILE, {
+    method: 'PUT',
+    body: JSON.stringify({
+      message: 'Update Sapsan members',
+      content,
+      branch: BRANCH,
+      ...(sha ? { sha } : {})
+    })
+  });
+}
+
 // Вход администратора.
 app.post('/api/login', (req, res) => {
   if (!ADMIN_PASSWORD || !SESSION_SECRET) {
@@ -270,6 +299,95 @@ app.get('/api/admin/posts', requireAdmin, async (req, res) => {
   }
 });
 
+
+// Публичный состав отряда.
+app.get('/api/members', async (req, res) => {
+  try {
+    const { members } = await readMembers();
+    res.set('Cache-Control', 'no-store');
+    res.json(members);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Не удалось загрузить состав отряда' });
+  }
+});
+
+// Состав отряда для администратора.
+app.get('/api/admin/members', requireAdmin, async (req, res) => {
+  try {
+    const { members } = await readMembers();
+    res.json(members);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Не удалось загрузить состав отряда' });
+  }
+});
+
+// Создание участника.
+app.post('/api/members', requireAdmin, async (req, res) => {
+  try {
+    const name = String(req.body.name || '').trim().slice(0, 120);
+    const role = String(req.body.role || '').trim().slice(0, 100);
+    const description = String(req.body.description || '').trim().slice(0, 1500);
+    const group = ['senior', 'middle'].includes(req.body.group) ? req.body.group : '';
+    const imageKey = req.body.image_key || null;
+    if (!name || !group) return res.status(400).json({ error: 'Укажите ФИО и группу' });
+    const { members, sha } = await readMembers();
+    const member = {
+      id: crypto.randomUUID(), name, role, description, group,
+      image_key: imageKey,
+      image_url: imageKey ? `/media/${imageKey}` : null,
+      sort_order: members.filter(x => x.group === group).length,
+      created_at: new Date().toISOString()
+    };
+    members.push(member);
+    await saveMembers(members, sha);
+    res.json({ ok: true, id: member.id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Не удалось добавить участника' });
+  }
+});
+
+// Редактирование участника и перенос между группами.
+app.put('/api/members', requireAdmin, async (req, res) => {
+  try {
+    const { members, sha } = await readMembers();
+    const member = members.find(x => x.id === String(req.body.id || ''));
+    if (!member) return res.status(404).json({ error: 'Участник не найден' });
+    const name = String(req.body.name || '').trim().slice(0, 120);
+    const group = ['senior', 'middle'].includes(req.body.group) ? req.body.group : '';
+    if (!name || !group) return res.status(400).json({ error: 'Укажите ФИО и группу' });
+    member.name = name;
+    member.role = String(req.body.role || '').trim().slice(0, 100);
+    member.description = String(req.body.description || '').trim().slice(0, 1500);
+    member.group = group;
+    if (req.body.image_key) {
+      member.image_key = req.body.image_key;
+      member.image_url = `/media/${req.body.image_key}`;
+    }
+    await saveMembers(members, sha);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Не удалось изменить участника' });
+  }
+});
+
+// Удаление участника.
+app.delete('/api/members', requireAdmin, async (req, res) => {
+  try {
+    const { members, sha } = await readMembers();
+    const filtered = members.filter(x => x.id !== String(req.body.id || ''));
+    if (filtered.length === members.length) return res.status(404).json({ error: 'Участник не найден' });
+    await saveMembers(filtered, sha);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Не удалось удалить участника' });
+  }
+});
+
 // Загрузка фотографии в GitHub.
 app.post(
   '/api/upload',
@@ -301,12 +419,13 @@ app.post(
         ? 'jpg'
         : file.mimetype.split('/')[1];
 
-      const key = `uploads/news/${crypto.randomUUID()}.${ext}`;
+      const folder = req.body?.type === 'member' ? 'uploads/members' : 'uploads/news';
+      const key = `${folder}/${crypto.randomUUID()}.${ext}`;
 
       await githubRequest(key, {
         method: 'PUT',
         body: JSON.stringify({
-          message: 'Upload Sapsan news image',
+          message: folder === 'uploads/members' ? 'Upload Sapsan member photo' : 'Upload Sapsan news image',
           content: file.buffer.toString('base64'),
           branch: BRANCH
         })
