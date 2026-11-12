@@ -13,31 +13,66 @@
 .login-wrap{min-height:100vh;display:grid;place-items:center;padding:22px}.login{width:min(430px,100%);padding:30px;background:linear-gradient(145deg,#201b23,#111117);border:1px solid #51404a;border-radius:20px;box-shadow:0 30px 90px #0008}.login h1{font-size:30px;margin:10px 0}.login .brand{border:0;padding:0 0 24px}.login .btn{width:100%;padding:14px}.login-note{font-size:11px;color:#aaa1ac;margin-top:18px;line-height:1.5}
 @media(max-width:1250px){.sidebar{width:245px}.main{margin-left:245px}.content-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.sidebar{background-color:#100f15}}
 @media(max-width:760px){.sidebar{position:static;width:auto;height:auto;padding:14px;background:#100f15}.brand{padding:0 5px 12px}.nav-label,.sidebar-bottom{display:none}.nav{display:flex;overflow:auto;padding-top:12px}.nav a,.nav button{white-space:nowrap;width:auto;padding:9px 11px;font-size:13px}.main{margin:0;padding:0 14px 35px}.topbar{margin:0 -14px 14px;padding:0 14px}.heading{align-items:flex-start;flex-direction:column}.hero{height:auto;min-height:220px;padding:28px 24px}.hero h1{font-size:28px}.stats{gap:9px}.stat{padding:14px}.stat strong{font-size:27px}.panel{padding:15px}.form-grid{grid-template-columns:1fr}.wide{grid-column:auto}.post{grid-template-columns:78px minmax(0,1fr)}.post img{width:78px;height:65px}.published,.post .actions{grid-column:2}.profile{padding:6px}.crumb{display:none}}
+
+.member-admin-card{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:14px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.018);margin-bottom:10px}
+.member-admin-card img,.member-admin-placeholder{width:76px;height:76px;object-fit:cover;object-position:center top;border-radius:10px;background:#25232a;display:grid;place-items:center;color:#8f8995;font-size:25px}
+.member-admin-card h3{font-size:15px;margin:0 0 5px}.member-admin-card p{font-size:12px;color:var(--muted);margin:0}
+.member-admin-actions{display:flex;gap:7px;flex-wrap:wrap}
+.member-admin-actions button{border:1px solid var(--line);border-radius:8px;background:#211e25;color:#eee;padding:8px 10px;cursor:pointer}
+.member-admin-actions .delete{color:#ff8791;border-color:#67343b}
+@media(max-width:600px){.member-admin-card{grid-template-columns:58px minmax(0,1fr)}.member-admin-card img,.member-admin-placeholder{width:58px;height:58px}.member-admin-actions{grid-column:2}}
 </style></head><body>
 <div id="loginPanel" class="login-wrap"><section class="login"><div class="brand"><div class="brand-mark">С</div><div><b>САПСАН</b><small>ЮНАРМЕЙСКИЙ ОТРЯД</small></div></div><div class="eyebrow">ЗАКРЫТАЯ ЗОНА · АДМИНИСТРАТОР</div><h1>Вход в систему</h1><p class="muted">Управление официальным порталом отряда «Сапсан».</p><form id="loginForm"><div class="field"><label for="password">Пароль администратора</label><input id="password" type="password" autocomplete="current-password" required placeholder="Введите пароль"></div><button class="btn" type="submit">ВОЙТИ В ПАНЕЛЬ</button><p class="status" id="loginStatus" aria-live="polite"></p></form><p class="login-note">Доступ предназначен только для уполномоченного администратора.</p></section></div>
 <div id="dashboard" class="shell hidden">
 <aside class="sidebar"><div class="brand"><div class="brand-mark">С</div><div><b>САПСАН</b><small>АДМИН-ПАНЕЛЬ</small></div></div><div class="nav-label">РАБОЧЕЕ ПРОСТРАНСТВО</div>
-<nav class="nav"><a href="#home" class="active"><span class="ico">⌂</span>Главная</a><a href="#news"><span class="ico">▤</span>Новости</a><a href="#team" title="Раздел будет добавлен позже"><span class="ico">♙</span>Состав отряда</a><a href="#events" title="Раздел будет добавлен позже"><span class="ico">▦</span>Мероприятия</a><a href="#gallery" title="Раздел будет добавлен позже"><span class="ico">▧</span>Файлы и медиа</a><a href="#awards" title="Раздел будет добавлен позже"><span class="ico">★</span>Достижения</a><a href="#history" title="Раздел будет добавлен позже"><span class="ico">⚙</span>Настройки</a></nav>
+<nav class="nav"><a href="#home" class="active"><span class="ico">⌂</span>Главная</a><a href="#news"><span class="ico">▤</span>Новости</a><a href="#team"><span class="ico">♙</span>Состав отряда</a><a href="#events" title="Раздел будет добавлен позже"><span class="ico">▦</span>Мероприятия</a><a href="#gallery" title="Раздел будет добавлен позже"><span class="ico">▧</span>Файлы и медиа</a><a href="#awards" title="Раздел будет добавлен позже"><span class="ico">★</span>Достижения</a><a href="#history" title="Раздел будет добавлен позже"><span class="ico">⚙</span>Настройки</a></nav>
 <div class="sidebar-bottom"><a class="nav" href="/" style="padding:12px;color:#eee">↗ На сайт</a><button class="logout" id="logoutBtn">⇥ Выйти из системы</button></div></aside>
 <main class="main"><div class="topbar"><div class="crumb">Сапсан　/　<span id="crumbCurrent">Админ-панель</span></div><div class="profile"><div class="avatar">А</div><div><strong>Администратор</strong><small>Полный доступ</small></div></div></div>
 <section id="homeSection">
 <div class="hero"><div class="hero-copy"><h1>Добро пожаловать в<br> админ-панель <span>«Сапсан»</span></h1><p>Управляйте новостями, публикациями и контентом юнармейского отряда.</p></div></div>
 <div class="stats">
 <article class="stat"><div class="stat-top">Новости <span class="stat-icon">▤</span></div><strong id="statPosts">—</strong><small>Всего публикаций</small></article>
-<article class="stat"><div class="stat-top">Просмотры <span class="stat-icon">◉</span></div><strong>1 842</strong><small>За всё время</small></article>
-<article class="stat"><div class="stat-top">Участники <span class="stat-icon">♟</span></div><strong>28</strong><small>В составе отряда</small></article>
-<article class="stat"><div class="stat-top">Фотографии <span class="stat-icon">▧</span></div><strong>136</strong><small>В медиатеке</small></article>
+<article class="stat"><div class="stat-top">Просмотры <span class="stat-icon">◉</span></div><strong>—</strong><small>Аналитика не подключена</small></article>
+<article class="stat"><div class="stat-top">Участники <span class="stat-icon">♟</span></div><strong id="statMembers">0</strong><small>В составе отряда</small></article>
+<article class="stat"><div class="stat-top">Фотографии <span class="stat-icon">▧</span></div><strong>—</strong><small>Количество не подсчитывается</small></article>
 </div>
 <div class="content-grid"><section class="panel"><div class="panel-head"><div><h2>▤　Последние новости</h2><p class="hint">Последние публикации на портале</p></div><button class="btn secondary" id="goNews">Все новости　→</button></div><div id="recentPosts" class="posts"><div class="empty">Загрузка публикаций…</div></div></section>
 <aside><section class="panel"><div class="panel-head"><div><h2>ϟ　Быстрые действия</h2><p class="hint">Управление порталом</p></div></div><div class="toolbar" style="display:grid"><button class="btn" id="newPostBtn">＋　Создать новость</button><button class="btn secondary" id="refreshBtn">↻　Обновить данные</button></div></section><section class="panel about" style="margin-top:18px"><div class="panel-head"><h2>ⓘ　О отряде</h2></div><h2 style="font-size:28px;margin:8px 0">Сапсан</h2><p class="muted">Юнармейский отряд<br>МБОУ СОШ №2<br>им. Л. П. Шведченко<br>г. Щёлкино</p></section></aside></div>
 </section>
 <section id="newsSection" class="hidden"><div class="heading"><div><div class="eyebrow">УПРАВЛЕНИЕ СОДЕРЖИМЫМ</div><h1>Новости отряда</h1><p class="muted">Создавайте публикации — они автоматически появятся на главной странице сайта.</p></div><button class="btn secondary" id="backHome">← На главную</button></div><section class="panel"><div class="panel-head"><div><h2 id="formHeading">Новая публикация</h2><p class="hint">Заголовок и текст обязательны. JPG, PNG и WEBP до 5 МБ.</p></div></div><form id="postForm"><input type="hidden" id="postId"><div class="form-grid"><div class="field"><label for="title">Заголовок</label><input id="title" maxlength="140" required placeholder="Например: Участие в городском мероприятии"></div><div class="field"><label for="category">Категория</label><select id="category"><option>Новости</option><option>Мероприятия</option><option>Соревнования</option><option>Память и история</option><option>Достижения</option></select></div><div class="field wide"><label for="body">Текст публикации</label><textarea id="body" maxlength="12000" required placeholder="Расскажите, что произошло..."></textarea></div><div class="field wide"><label for="image">Фотография (необязательно)</label><input id="image" type="file" accept="image/jpeg,image/png,image/webp"><img id="imagePreview" class="preview hidden" alt="Предпросмотр изображения"><p class="hint">При редактировании без нового фото прежнее изображение сохранится.</p></div></div><div class="toolbar"><button class="btn" id="saveBtn" type="submit">ОПУБЛИКОВАТЬ</button><button class="btn secondary hidden" id="cancelEdit" type="button">Отменить редактирование</button></div><p class="status" id="formStatus" aria-live="polite"></p></form></section><section class="panel" style="margin-top:18px"><div class="panel-head"><div><h2>Все публикации</h2><p class="hint">Редактирование и удаление новостей</p></div><span class="tag" id="newsCount">0 ЗАПИСЕЙ</span></div><div id="postsList" class="posts"><div class="empty">Загрузка публикаций…</div></div></section></section>
+
+<section id="teamSection" class="hidden">
+  <div class="heading"><div><div class="eyebrow">УПРАВЛЕНИЕ УЧАСТНИКАМИ</div><h1>Состав отряда</h1><p class="muted">Добавляйте участников и распределяйте их по группам. Изменения появятся на публичном сайте.</p></div><button class="btn secondary" id="teamBackHome">← На главную</button></div>
+  <section class="panel">
+    <div class="panel-head"><div><h2 id="memberFormHeading">Новый участник</h2><p class="hint">ФИО и группа обязательны. Фото JPG, PNG или WEBP до 5 МБ.</p></div></div>
+    <form id="memberForm">
+      <input type="hidden" id="memberId">
+      <div class="form-grid">
+        <div class="field"><label for="memberName">ФИО</label><input id="memberName" maxlength="120" required placeholder="Фамилия Имя Отчество"></div>
+        <div class="field"><label for="memberGroup">Группа</label><select id="memberGroup" required><option value="senior">Старшая группа</option><option value="middle">Средняя группа</option></select></div>
+        <div class="field"><label for="memberRole">Должность / звание</label><input id="memberRole" maxlength="100" placeholder="Например: командир отделения"></div>
+        <div class="field wide"><label for="memberDescription">Описание</label><textarea id="memberDescription" maxlength="1500" placeholder="Краткая информация (необязательно)"></textarea></div>
+        <div class="field wide"><label for="memberImage">Фотография</label><input id="memberImage" type="file" accept="image/jpeg,image/png,image/webp"><img id="memberPreview" class="preview hidden" alt="Предпросмотр фотографии"><p class="hint">Если новое фото не выбрано, прежнее сохранится.</p></div>
+      </div>
+      <div class="toolbar"><button class="btn" id="memberSaveBtn" type="submit">ДОБАВИТЬ УЧАСТНИКА</button><button class="btn secondary hidden" id="memberCancel" type="button">Отменить</button></div>
+      <p class="status" id="memberStatus" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="panel" style="margin-top:18px">
+    <div class="panel-head"><div><h2>Старшая группа</h2><p class="hint">Участники старшей группы</p></div><span class="tag" id="seniorTotal">0</span></div>
+    <div id="seniorList" class="posts"><div class="empty">Загрузка…</div></div>
+  </section>
+  <section class="panel" style="margin-top:18px">
+    <div class="panel-head"><div><h2>Средняя группа</h2><p class="hint">Участники средней группы</p></div><span class="tag" id="middleTotal">0</span></div>
+    <div id="middleList" class="posts"><div class="empty">Загрузка…</div></div>
+  </section>
+</section>
 </main></div>
 <script>
 const $=id=>document.getElementById(id);
 let posts=[];let currentImageKey=null;let previewUrl=null;
 async function api(url,options={}){const response=await fetch(url,{credentials:'same-origin',...options});let data={};try{data=await response.json()}catch{}if(!response.ok)throw new Error(data.error||`Ошибка ${response.status}`);return data}
-function showDashboard(){ $('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');loadPosts() }
+function showDashboard(){ $('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');loadPosts();loadMembers() }
 function resetForm(){ $('postForm').reset();$('postId').value='';currentImageKey=null;$('formHeading').textContent='Новая публикация';$('saveBtn').textContent='ОПУБЛИКОВАТЬ';$('cancelEdit').classList.add('hidden');$('imagePreview').classList.add('hidden');$('formStatus').textContent='';if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null }
 async function loadPosts(){try{posts=await api('/api/admin/posts');renderPosts()}catch(error){$('postsList').innerHTML=`<div class="empty">${escapeHtml(error.message)}</div>`}}
 function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -51,10 +86,76 @@ $('image').addEventListener('change',()=>{const file=$('image').files[0];if(!fil
 $('postForm').addEventListener('submit',async e=>{e.preventDefault();const save=$('saveBtn');save.disabled=true;$('formStatus').textContent='Сохраняем публикацию…';try{let imageKey=currentImageKey;const file=$('image').files[0];if(file){const fd=new FormData();fd.append('image',file);const uploaded=await api('/api/upload',{method:'POST',body:fd});imageKey=uploaded.image_key}const id=$('postId').value;const payload={id,title:$('title').value,body:$('body').value,category:$('category').value,image_key:imageKey};await api('/api/posts',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});resetForm();$('formStatus').textContent='Публикация сохранена.';await loadPosts()}catch(error){$('formStatus').textContent=error.message}finally{save.disabled=false}});
 
 
+
+// Управление составом отряда.
+let members=[];
+let memberImageKey=null;
+let memberPreviewUrl=null;
+async function loadMembers(){
+  try{members=await api('/api/admin/members');renderMembers()}
+  catch(error){$('seniorList').innerHTML=`<div class="empty">${escapeHtml(error.message)}</div>`;$('middleList').innerHTML=''}
+}
+function renderMembers(){
+  const card=m=>`<article class="member-admin-card">${m.image_url?`<img src="${escapeHtml(m.image_url)}" alt="">`:'<div class="member-admin-placeholder">♙</div>'}<div><h3>${escapeHtml(m.name)}</h3><p>${escapeHtml(m.role||'Должность не указана')}${m.description?' · '+escapeHtml(m.description):''}</p></div><div class="member-admin-actions"><button data-member-edit="${m.id}">Изменить</button><button data-member-delete="${m.id}" class="delete">Удалить</button></div></article>`;
+  const senior=members.filter(m=>m.group==='senior'),middle=members.filter(m=>m.group==='middle');
+  $('seniorList').innerHTML=senior.length?senior.map(card).join(''):'<div class="empty">В старшей группе пока нет участников.</div>';
+  $('middleList').innerHTML=middle.length?middle.map(card).join(''):'<div class="empty">В средней группе пока нет участников.</div>';
+  $('seniorTotal').textContent=senior.length+' УЧАСТНИКОВ';$('middleTotal').textContent=middle.length+' УЧАСТНИКОВ';$('statMembers').textContent=members.length;
+  document.querySelectorAll('[data-member-edit]').forEach(b=>b.onclick=()=>editMember(b.dataset.memberEdit));
+  document.querySelectorAll('[data-member-delete]').forEach(b=>b.onclick=()=>deleteMember(b.dataset.memberDelete));
+}
+function resetMemberForm(){
+  $('memberForm').reset();$('memberId').value='';memberImageKey=null;
+  $('memberFormHeading').textContent='Новый участник';$('memberSaveBtn').textContent='ДОБАВИТЬ УЧАСТНИКА';
+  $('memberCancel').classList.add('hidden');$('memberPreview').classList.add('hidden');$('memberStatus').textContent='';
+  if(memberPreviewUrl)URL.revokeObjectURL(memberPreviewUrl);memberPreviewUrl=null;
+}
+function editMember(id){
+  const m=members.find(x=>x.id===id);if(!m)return;
+  $('memberId').value=m.id;$('memberName').value=m.name;$('memberGroup').value=m.group;
+  $('memberRole').value=m.role||'';$('memberDescription').value=m.description||'';
+  memberImageKey=m.image_key||null;$('memberFormHeading').textContent='Редактирование участника';
+  $('memberSaveBtn').textContent='СОХРАНИТЬ ИЗМЕНЕНИЯ';$('memberCancel').classList.remove('hidden');
+  if(m.image_url){$('memberPreview').src=m.image_url;$('memberPreview').classList.remove('hidden')}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+async function deleteMember(id){
+  const m=members.find(x=>x.id===id);if(!m||!confirm(`Удалить участника «${m.name}»?`))return;
+  try{await api('/api/members',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});await loadMembers()}
+  catch(error){alert(error.message)}
+}
+$('memberImage').addEventListener('change',()=>{
+  const file=$('memberImage').files[0];if(!file)return;
+  if(memberPreviewUrl)URL.revokeObjectURL(memberPreviewUrl);
+  memberPreviewUrl=URL.createObjectURL(file);$('memberPreview').src=memberPreviewUrl;$('memberPreview').classList.remove('hidden');
+});
+$('memberCancel').onclick=resetMemberForm;
+$('memberForm').addEventListener('submit',async e=>{
+  e.preventDefault();const save=$('memberSaveBtn');save.disabled=true;$('memberStatus').textContent='Сохраняем участника…';
+  try{
+    let imageKey=memberImageKey;const file=$('memberImage').files[0];
+    if(file){const fd=new FormData();fd.append('image',file);fd.append('type','member');const uploaded=await api('/api/upload',{method:'POST',body:fd});imageKey=uploaded.image_key}
+    const id=$('memberId').value;
+    const payload={id,name:$('memberName').value,group:$('memberGroup').value,role:$('memberRole').value,description:$('memberDescription').value,image_key:imageKey};
+    await api('/api/members',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    resetMemberForm();$('memberStatus').textContent='Участник сохранён.';await loadMembers();
+  }catch(error){$('memberStatus').textContent=error.message}
+  finally{save.disabled=false}
+});
+
 // Навигация панели
-function showHome(){ $('homeSection').classList.remove('hidden');$('newsSection').classList.add('hidden');$('crumbCurrent').textContent='Главная';document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));document.querySelector('.nav a[href="#home"]').classList.add('active') }
-function showNews(){ $('homeSection').classList.add('hidden');$('newsSection').classList.remove('hidden');$('crumbCurrent').textContent='Новости';document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));document.querySelector('.nav a[href="#news"]').classList.add('active') }
-$('goNews').onclick=showNews;$('newPostBtn').onclick=()=>{showNews();resetForm();window.scrollTo({top:0,behavior:'smooth'})};$('backHome').onclick=showHome;$('refreshBtn').onclick=loadPosts;document.querySelector('.nav a[href="#home"]').onclick=e=>{e.preventDefault();showHome()};document.querySelector('.nav a[href="#news"]').onclick=e=>{e.preventDefault();showNews()};
+function setPanel(name){
+  $('homeSection').classList.toggle('hidden',name!=='home');$('newsSection').classList.toggle('hidden',name!=='news');$('teamSection').classList.toggle('hidden',name!=='team');
+  $('crumbCurrent').textContent=name==='home'?'Главная':name==='news'?'Новости':'Состав отряда';
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));
+  document.querySelector(`.nav a[href="#${name}"]`)?.classList.add('active');
+  if(name==='team')loadMembers();
+}
+function showHome(){setPanel('home')}
+function showNews(){setPanel('news')}
+function showTeam(){setPanel('team')}
+$('teamBackHome').onclick=showHome;
+$('goNews').onclick=showNews;document.querySelector('.nav a[href="#team"]').onclick=e=>{e.preventDefault();showTeam()};$('newPostBtn').onclick=()=>{showNews();resetForm();window.scrollTo({top:0,behavior:'smooth'})};$('backHome').onclick=showHome;$('refreshBtn').onclick=loadPosts;document.querySelector('.nav a[href="#home"]').onclick=e=>{e.preventDefault();showHome()};document.querySelector('.nav a[href="#news"]').onclick=e=>{e.preventDefault();showNews()};
 
 
 </script></body></html>
