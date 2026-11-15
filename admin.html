@@ -280,7 +280,8 @@ function showReports(){setPanel('reports')}
 function showGallery(){setPanel('gallery')}
 function showEvents(){setPanel('events')}
 $('eventsNav').onclick=e=>{e.preventDefault();showEvents()};$('eventsBackHome').onclick=showHome;
-document.querySelector('#galleryNav').onclick=e=>{e.preventDefault();showGallery()};$('galleryBackHome').onclick=showHome;
+const galleryNav=document.querySelector('#galleryNav');
+if(galleryNav)galleryNav.addEventListener('click',e=>{e.preventDefault();showGallery()});
 $('reportsBackHome').onclick=showHome;
 document.querySelector('.nav a[href="#reports"]').onclick=e=>{e.preventDefault();showReports()};
 $('teamBackHome').onclick=showHome;
